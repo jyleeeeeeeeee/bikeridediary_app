@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'main_shell.dart';
 import '../../features/auth/domain/auth_provider.dart';
 import '../../features/auth/domain/auth_state.dart';
 import '../../features/auth/presentation/login_screen.dart';
@@ -15,6 +16,10 @@ import '../../features/maintenance/presentation/maintenance_form_screen.dart';
 import '../../features/maintenance/presentation/maintenance_list_screen.dart';
 import '../../features/maintenance/presentation/schedule_detail_screen.dart';
 import '../../features/maintenance/presentation/schedule_form_screen.dart';
+import '../../features/fueling/presentation/fueling_list_screen.dart';
+import '../../features/fueling/presentation/fueling_form_screen.dart';
+import '../../features/fueling/data/model/fueling_response.dart';
+import '../../features/settings/presentation/settings_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -23,64 +28,151 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: '/',
     redirect: (context, state) {
       final isAuthenticated = authState.status == AuthStatus.authenticated;
-      final isAuthRoute = state.matchedLocation == '/login' || state.matchedLocation == '/signup';
+      final isAuthRoute =
+          state.matchedLocation == '/login' ||
+          state.matchedLocation == '/signup';
 
       if (!isAuthenticated && !isAuthRoute) return '/login';
       if (isAuthenticated && isAuthRoute) return '/';
       return null;
     },
     routes: [
+      // Auth routes — outside the shell (no bottom nav)
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/signup', builder: (_, __) => const SignupScreen()),
-      GoRoute(path: '/', builder: (_, __) => const HomeScreen()),
 
-      // 바이크
-      GoRoute(path: '/bikes', builder: (_, __) => const BikeListScreen()),
-      GoRoute(path: '/bikes/new', builder: (_, __) => const BikeFormScreen()),
-      GoRoute(
-        path: '/bikes/:bikeId',
-        builder: (_, state) => BikeDetailScreen(bikeId: state.pathParameters['bikeId']!),
-      ),
-      GoRoute(
-        path: '/bikes/:bikeId/edit',
-        builder: (_, state) => BikeFormScreen(bike: state.extra as BikeResponse?),
-      ),
+      // Shell routes — wrapped with BottomNavigationBar
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            MainShell(navigationShell: navigationShell),
+        branches: [
+          // Branch 0: 홈
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/',
+                builder: (_, __) => const HomeScreen(),
+              ),
+            ],
+          ),
 
-      // 정비
-      GoRoute(
-        path: '/bikes/:bikeId/maintenances',
-        builder: (_, state) => MaintenanceListScreen(bikeId: state.pathParameters['bikeId']!),
-      ),
-      GoRoute(
-        path: '/bikes/:bikeId/maintenances/new',
-        builder: (_, state) => MaintenanceFormScreen(bikeId: state.pathParameters['bikeId']!),
-      ),
-      GoRoute(
-        path: '/bikes/:bikeId/maintenances/:maintenanceId',
-        builder: (_, state) => MaintenanceDetailScreen(
-          bikeId: state.pathParameters['bikeId']!,
-          maintenanceId: state.pathParameters['maintenanceId']!,
-        ),
-      ),
-      GoRoute(
-        path: '/bikes/:bikeId/maintenances/:maintenanceId/edit',
-        builder: (_, state) => MaintenanceFormScreen(
-          bikeId: state.pathParameters['bikeId']!,
-          maintenance: state.extra as MaintenanceResponse?,
-        ),
-      ),
+          // Branch 1: 내 바이크 (includes maintenance and schedule sub-routes)
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/bikes',
+                builder: (_, __) => const BikeListScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'new',
+                    builder: (_, __) => const BikeFormScreen(),
+                  ),
+                  GoRoute(
+                    path: ':bikeId',
+                    builder: (_, state) => BikeDetailScreen(
+                      bikeId: state.pathParameters['bikeId']!,
+                    ),
+                    routes: [
+                      GoRoute(
+                        path: 'edit',
+                        builder: (_, state) => BikeFormScreen(
+                          bike: state.extra as BikeResponse?,
+                        ),
+                      ),
 
-      // 정비 스케줄
-      GoRoute(
-        path: '/bikes/:bikeId/schedules/new',
-        builder: (_, state) => ScheduleFormScreen(bikeId: state.pathParameters['bikeId']!),
-      ),
-      GoRoute(
-        path: '/bikes/:bikeId/schedules/:scheduleId',
-        builder: (_, state) => ScheduleDetailScreen(
-          bikeId: state.pathParameters['bikeId']!,
-          scheduleId: state.pathParameters['scheduleId']!,
-        ),
+                      // 정비 기록
+                      GoRoute(
+                        path: 'maintenances',
+                        builder: (_, state) => MaintenanceListScreen(
+                          bikeId: state.pathParameters['bikeId']!,
+                        ),
+                        routes: [
+                          GoRoute(
+                            path: 'new',
+                            builder: (_, state) => MaintenanceFormScreen(
+                              bikeId: state.pathParameters['bikeId']!,
+                            ),
+                          ),
+                          GoRoute(
+                            path: ':maintenanceId',
+                            builder: (_, state) => MaintenanceDetailScreen(
+                              bikeId: state.pathParameters['bikeId']!,
+                              maintenanceId:
+                                  state.pathParameters['maintenanceId']!,
+                            ),
+                            routes: [
+                              GoRoute(
+                                path: 'edit',
+                                builder: (_, state) => MaintenanceFormScreen(
+                                  bikeId: state.pathParameters['bikeId']!,
+                                  maintenance:
+                                      state.extra as MaintenanceResponse?,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+
+                      // 정비 스케줄
+                      GoRoute(
+                        path: 'schedules',
+                        routes: [
+                          GoRoute(
+                            path: 'new',
+                            builder: (_, state) => ScheduleFormScreen(
+                              bikeId: state.pathParameters['bikeId']!,
+                            ),
+                          ),
+                          GoRoute(
+                            path: ':scheduleId',
+                            builder: (_, state) => ScheduleDetailScreen(
+                              bikeId: state.pathParameters['bikeId']!,
+                              scheduleId:
+                                  state.pathParameters['scheduleId']!,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          // Branch 2: 주유 기록
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/fuel',
+                builder: (_, __) => const FuelingListScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'new',
+                    builder: (_, __) => const FuelingFormScreen(),
+                  ),
+                  GoRoute(
+                    path: ':fuelingId/edit',
+                    builder: (_, state) => FuelingFormScreen(
+                      fueling: state.extra as FuelingResponse?,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          // Branch 3: 설정
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/settings',
+                builder: (_, __) => const SettingsScreen(),
+              ),
+            ],
+          ),
+        ],
       ),
     ],
   );
