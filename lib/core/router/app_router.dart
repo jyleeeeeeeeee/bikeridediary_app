@@ -9,6 +9,7 @@ import '../../features/bike/data/model/bike_response.dart';
 import '../../features/bike/presentation/bike_detail_screen.dart';
 import '../../features/bike/presentation/bike_form_screen.dart';
 import '../../features/bike/presentation/bike_list_screen.dart';
+import '../../features/bike/presentation/bike_registration_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/maintenance/data/model/maintenance_response.dart';
 import '../../features/maintenance/presentation/maintenance_detail_screen.dart';
@@ -65,7 +66,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'new',
-                    builder: (_, __) => const BikeFormScreen(),
+                    builder: (_, __) => const BikeRegistrationScreen(),
                   ),
                   GoRoute(
                     path: ':bikeId',
@@ -117,6 +118,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                       // 정비 스케줄
                       GoRoute(
                         path: 'schedules',
+                        redirect: (_, __) => null,
                         routes: [
                           GoRoute(
                             path: 'new',

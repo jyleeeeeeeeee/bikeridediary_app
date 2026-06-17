@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/empty_bike_view.dart';
 import '../data/model/bike_category.dart';
 import '../domain/bike_provider.dart';
 
@@ -243,48 +244,6 @@ class _EmptyBikeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 96,
-                height: 96,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1B2838).withValues(alpha: 0.08),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.two_wheeler,
-                  size: 48,
-                  color: Color(0xFF1B2838),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                '아직 등록된 바이크가 없습니다',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '바이크를 등록하고 관리를 시작하세요',
-                style: TextStyle(color: Colors.grey[500], fontSize: 14),
-              ),
-              const SizedBox(height: 32),
-              FilledButton.icon(
-                onPressed: () => context.push('/bikes/new'),
-                icon: const Icon(Icons.add),
-                label: const Text('바이크 등록'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    return const SafeArea(child: EmptyBikeView());
   }
 }

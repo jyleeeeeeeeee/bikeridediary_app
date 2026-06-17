@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/empty_bike_view.dart';
 import '../../auth/domain/auth_provider.dart';
 import '../../bike/data/model/bike_category.dart';
 import '../../bike/data/model/bike_response.dart';
@@ -132,53 +133,7 @@ class _ErrorView extends StatelessWidget {
 class _EmptyBikeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 96,
-                height: 96,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1B2838).withValues(alpha: 0.08),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.two_wheeler,
-                  size: 48,
-                  color: Color(0xFF1B2838),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                '바이크를 등록해주세요',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '나만의 바이크를 등록하고\n정비 기록을 시작하세요',
-                textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: Colors.grey),
-              ),
-              const SizedBox(height: 32),
-              FilledButton.icon(
-                onPressed: () => context.push('/bikes/new'),
-                icon: const Icon(Icons.add),
-                label: const Text('바이크 등록'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    return const SafeArea(child: EmptyBikeView());
   }
 }
 

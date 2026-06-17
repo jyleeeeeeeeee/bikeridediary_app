@@ -7,6 +7,7 @@ import '../data/model/fueling_response.dart';
 import '../data/model/fueling_stats_response.dart';
 import '../domain/fueling_provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/empty_bike_view.dart';
 
 class FuelingListScreen extends ConsumerStatefulWidget {
   const FuelingListScreen({super.key});
@@ -559,21 +560,6 @@ class _EmptyRecordsState extends StatelessWidget {
 class _EmptyBikeState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.two_wheeler, size: 64, color: Colors.grey),
-          const SizedBox(height: 16),
-          const Text('등록된 바이크가 없습니다'),
-          const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: () => context.push('/bikes/new'),
-            icon: const Icon(Icons.add),
-            label: const Text('바이크 등록'),
-          ),
-        ],
-      ),
-    );
+    return const EmptyBikeView();
   }
 }
