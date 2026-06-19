@@ -89,23 +89,76 @@ class _BikeRegistrationScreenState
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: List.generate(_totalSteps, (index) {
-                return Expanded(
-                  child: Container(
-                    height: 3,
-                    margin: EdgeInsets.only(
-                      right: index < _totalSteps - 1 ? 6 : 0,
-                    ),
-                    decoration: BoxDecoration(
-                      color: index <= _currentStep
-                          ? const Color(0xFF1B9CFC)
-                          : const Color(0xFFE5E7EB),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                );
-              }),
+            child: Column(
+              children: [
+                Row(
+                  children: List.generate(_totalSteps, (index) {
+                    final labels = ['제조사', '모델', '상세'];
+                    final isActive = index <= _currentStep;
+                    return Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          right: index < _totalSteps - 1 ? 6 : 0,
+                        ),
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 26,
+                              height: 26,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isActive
+                                    ? const Color(0xFF1B9CFC)
+                                    : const Color(0xFFE5E7EB),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '${index + 1}',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: isActive ? Colors.white : const Color(0xFF9CA3AF),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              labels[index],
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                                color: isActive
+                                    ? const Color(0xFF1B9CFC)
+                                    : const Color(0xFF9CA3AF),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: List.generate(_totalSteps, (index) {
+                    return Expanded(
+                      child: Container(
+                        height: 3,
+                        margin: EdgeInsets.only(
+                          right: index < _totalSteps - 1 ? 6 : 0,
+                        ),
+                        decoration: BoxDecoration(
+                          color: index <= _currentStep
+                              ? const Color(0xFF1B9CFC)
+                              : const Color(0xFFE5E7EB),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ],
             ),
           ),
         ],
