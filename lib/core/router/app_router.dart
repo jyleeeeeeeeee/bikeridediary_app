@@ -28,13 +28,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
     redirect: (context, state) {
-      final isAuthenticated = authState.status == AuthStatus.authenticated;
+      final isAllowed = authState.status == AuthStatus.authenticated;
       final isAuthRoute =
           state.matchedLocation == '/login' ||
           state.matchedLocation == '/signup';
 
-      if (!isAuthenticated && !isAuthRoute) return '/login';
-      if (isAuthenticated && isAuthRoute) return '/';
+      if (!isAllowed && !isAuthRoute) return '/login';
+      if (isAllowed && isAuthRoute) return '/';
       return null;
     },
     routes: [

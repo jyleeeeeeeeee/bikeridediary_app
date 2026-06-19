@@ -199,7 +199,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           TextButton(
-                            onPressed: () => context.go('/'),
+                            onPressed: () {
+                              ref.read(authProvider.notifier).continueAsGuest();
+                            },
                             style: TextButton.styleFrom(
                               foregroundColor: const Color(0xFF6B7280),
                               textStyle: const TextStyle(fontSize: 14),

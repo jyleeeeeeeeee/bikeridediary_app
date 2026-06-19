@@ -147,10 +147,7 @@ class _HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final category = BikeCategory.values.firstWhere(
-      (c) => c.name == bike.category,
-      orElse: () => BikeCategory.OTHER,
-    );
+    final categoryName = BikeTypeDisplay.displayName(bike.category);
 
     return Container(
       decoration: const BoxDecoration(gradient: AppTheme.headerGradient),
@@ -245,7 +242,7 @@ class _HomeHeader extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              '${category.displayName} · ${_formatNumber(bike.totalMileageKm)} km',
+                              '$categoryName · ${_formatNumber(bike.totalMileageKm)} km',
                               style: const TextStyle(
                                 color: Colors.white70,
                                 fontSize: 12,

@@ -44,10 +44,7 @@ class _BikeDetailBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final category = BikeCategory.values.firstWhere(
-      (c) => c.name == bike.category,
-      orElse: () => BikeCategory.OTHER,
-    );
+    final categoryName = BikeTypeDisplay.displayName(bike.category);
 
     final schedulesAsync = ref.watch(scheduleListProvider(bikeId));
     final fuelingStatsAsync = ref.watch(fuelingStatsProvider(bikeId));
@@ -162,7 +159,7 @@ class _BikeDetailBody extends ConsumerWidget {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${category.displayName} · ${bike.year}년식',
+                                  '${categoryName} · ${bike.year}년식',
                                   style: const TextStyle(
                                     fontSize: 13,
                                     color: Colors.white70,
@@ -245,7 +242,7 @@ class _BikeDetailBody extends ConsumerWidget {
                       _InfoRow(label: '제조사', value: bike.manufacturerName),
                       _InfoRow(label: '모델', value: bike.modelName),
                       _InfoRow(label: '연식', value: '${bike.year}년'),
-                      _InfoRow(label: '카테고리', value: category.displayName),
+                      _InfoRow(label: '카테고리', value: categoryName),
                       if (bike.purchasedAt != null)
                         _InfoRow(label: '구매일', value: bike.purchasedAt!),
                       _InfoRow(label: '등록일', value: bike.createdAt.substring(0, 10)),

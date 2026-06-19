@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/config/api_config.dart';
 import '../data/model/bike_category.dart';
 import '../data/model/bike_create_request.dart';
+import '../data/model/bike_model_name.dart';
 import '../data/model/manufacturer_model.dart';
 import '../domain/bike_provider.dart';
 import '../domain/manufacturer_provider.dart';
@@ -22,11 +23,14 @@ class _BikeRegistrationScreenState
   static const _totalSteps = 3;
 
   // Step 1: 제조사
-  String? _selectedManufacturer;
+  String? _selectedManufacturerName; // API 키 (영문)
+  String? _selectedManufacturerDisplay; // 화면 표시용 (한글)
   final _customManufacturerController = TextEditingController();
   bool _isCustomManufacturer = false;
 
   // Step 2: 모델명
+  String? _selectedModelName;
+  String? _selectedModelType; // bike_models.type (자동 세팅용)
   final _modelController = TextEditingController();
 
   // Step 3: 상세 정보
@@ -34,7 +38,6 @@ class _BikeRegistrationScreenState
     text: DateTime.now().year.toString(),
   );
   final _mileageController = TextEditingController(text: '0');
-  BikeCategory _selectedCategory = BikeCategory.NAKED;
 
   bool _isLoading = false;
 
@@ -196,15 +199,19 @@ class _BikeRegistrationScreenState
         }
         final mfr = manufacturers[index];
         final isSelected =
-            _selectedManufacturer == mfr.displayNameKo &&
+            _selectedManufacturerName == mfr.manufacturerName &&
             !_isCustomManufacturer;
         return _buildManufacturerTile(
           mfr: mfr,
           isSelected: isSelected,
           onTap: () {
             setState(() {
-              _selectedManufacturer = mfr.displayNameKo;
+              _selectedManufacturerName = mfr.manufacturerName;
+              _selectedManufacturerDisplay = mfr.displayNameKo;
               _isCustomManufacturer = false;
+              _selectedModelName = null;
+              _selectedModelType = null;
+              _modelController.clear();
             });
             Future.delayed(const Duration(milliseconds: 200), () {
               if (mounted) setState(() => _currentStep = 1);
@@ -220,8 +227,8 @@ class _BikeRegistrationScreenState
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    final logoFullUrl = mfr.logoUrl != null
-        ? '${ApiConfig.baseUrl}${mfr.logoUrl}'
+    final logoFullUrl = mfr.imageUrl != null
+        ? '${ApiConfig.baseUrl}${mfr.imageUrl}'
         : null;
 
     return GestureDetector(
@@ -301,7 +308,8 @@ class _BikeRegistrationScreenState
       onTap: () {
         setState(() {
           _isCustomManufacturer = true;
-          _selectedManufacturer = null;
+          _selectedManufacturerName = null;
+          _selectedManufacturerDisplay = null;
         });
         _showCustomManufacturerDialog();
       },
@@ -364,8 +372,12 @@ class _BikeRegistrationScreenState
               final value = _customManufacturerController.text.trim();
               if (value.isNotEmpty) {
                 setState(() {
-                  _selectedManufacturer = value;
+                  _selectedManufacturerName = value;
+                  _selectedManufacturerDisplay = value;
                   _isCustomManufacturer = true;
+                  _selectedModelName = null;
+                  _selectedModelType = null;
+                  _modelController.clear();
                 });
                 Navigator.pop(ctx);
                 setState(() => _currentStep = 1);
@@ -381,36 +393,136 @@ class _BikeRegistrationScreenState
   // ── Step 2: 모델명 입력 ──
 
   Widget _buildModelStep() {
+    final modelsAsync = _isCustomManufacturer || _selectedManufacturerName == null
+        ? null
+        : ref.watch(modelNamesProvider(_selectedManufacturerName!));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 24),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '차종은 무엇인가요?',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1B2838),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _selectedManufacturerDisplay ?? '',
+                style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _modelController,
+                decoration: const InputDecoration(
+                  hintText: '모델명 검색 또는 직접 입력',
+                  prefixIcon: Icon(Icons.search, size: 20),
+                ),
+                onChanged: (_) => setState(() {}),
+                onSubmitted: (_) => _goToDetailStep(),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Expanded(
+          child: modelsAsync == null
+              ? _buildManualModelInput()
+              : modelsAsync.when(
+                  data: (models) => _buildModelList(models),
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => _buildManualModelInput(),
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildModelList(List<BikeModelName> models) {
+    final query = _modelController.text.trim().toLowerCase();
+    final filtered = query.isEmpty
+        ? models
+        : models.where((m) => m.name.toLowerCase().contains(query)).toList();
+
+    if (filtered.isEmpty && query.isNotEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            Text(
+              '검색 결과가 없습니다',
+              style: TextStyle(fontSize: 14, color: Colors.grey[400]),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: _goToDetailStep,
+                child: Text('"${_modelController.text.trim()}" 직접 입력으로 진행'),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      itemCount: filtered.length,
+      separatorBuilder: (_, __) => const Divider(height: 1),
+      itemBuilder: (context, index) {
+        final model = filtered[index];
+        final isSelected = _selectedModelName == model.name;
+        final typeLabel = model.type != null
+            ? BikeTypeDisplay.displayName(model.type)
+            : null;
+        return ListTile(
+          title: Text(
+            model.name,
+            style: TextStyle(
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              color: isSelected ? const Color(0xFF1B9CFC) : const Color(0xFF1B2838),
+            ),
+          ),
+          subtitle: typeLabel != null
+              ? Text(typeLabel, style: TextStyle(fontSize: 12, color: Colors.grey[500]))
+              : null,
+          trailing: isSelected
+              ? const Icon(Icons.check_circle, color: Color(0xFF1B9CFC), size: 20)
+              : null,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          selectedTileColor: const Color(0xFFE8F4FD),
+          selected: isSelected,
+          onTap: () {
+            setState(() {
+              _selectedModelName = model.name;
+              _selectedModelType = model.type;
+              _modelController.text = model.name;
+            });
+            Future.delayed(const Duration(milliseconds: 200), () {
+              if (mounted) setState(() => _currentStep = 2);
+            });
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildManualModelInput() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 24),
-          const Text(
-            '차종은 무엇인가요?',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF1B2838),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            _selectedManufacturer ?? '',
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-          ),
-          const SizedBox(height: 24),
-          TextField(
-            controller: _modelController,
-            autofocus: true,
-            decoration: const InputDecoration(
-              hintText: '모델명을 입력하세요 (예: CBR650R)',
-              prefixIcon: Icon(Icons.search, size: 20),
-            ),
-            onSubmitted: (_) => _goToDetailStep(),
-          ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
             child: FilledButton(
@@ -418,13 +530,6 @@ class _BikeRegistrationScreenState
                   ? null
                   : _goToDetailStep,
               child: const Text('다음'),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Center(
-            child: Text(
-              '추후 제조사별 모델 목록이 제공될 예정입니다',
-              style: TextStyle(fontSize: 12, color: Colors.grey[400]),
             ),
           ),
         ],
@@ -441,6 +546,10 @@ class _BikeRegistrationScreenState
   // ── Step 3: 상세 정보 ──
 
   Widget _buildDetailStep() {
+    final categoryDisplay = _selectedModelType != null
+        ? BikeTypeDisplay.displayName(_selectedModelType)
+        : null;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -457,7 +566,7 @@ class _BikeRegistrationScreenState
           ),
           const SizedBox(height: 4),
           Text(
-            '${_selectedManufacturer ?? ''} ${_modelController.text}',
+            '${_selectedManufacturerDisplay ?? ''} ${_modelController.text}',
             style: TextStyle(fontSize: 14, color: Colors.grey[500]),
           ),
           const SizedBox(height: 28),
@@ -476,34 +585,42 @@ class _BikeRegistrationScreenState
 
           const _SectionLabel(text: '카테고리'),
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: BikeCategory.values.map((cat) {
-              final isSelected = _selectedCategory == cat;
-              return ChoiceChip(
-                label: Text(cat.displayName),
-                selected: isSelected,
-                onSelected: (_) => setState(() => _selectedCategory = cat),
-                selectedColor:
-                    const Color(0xFF1B9CFC).withValues(alpha: 0.15),
-                labelStyle: TextStyle(
-                  color: isSelected
-                      ? const Color(0xFF1B9CFC)
-                      : const Color(0xFF6B7280),
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                ),
-                side: BorderSide(
-                  color: isSelected
-                      ? const Color(0xFF1B9CFC)
-                      : const Color(0xFFE5E7EB),
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              );
-            }).toList(),
-          ),
+          if (categoryDisplay != null)
+            // DB에서 가져온 타입 자동 표시
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1B9CFC).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF1B9CFC).withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.category, size: 18, color: Color(0xFF1B9CFC)),
+                  const SizedBox(width: 10),
+                  Text(
+                    categoryDisplay,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1B2838),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            // 직접 입력 모델이면 카테고리 직접 입력
+            TextField(
+              controller: TextEditingController(),
+              decoration: const InputDecoration(
+                hintText: '예: Sport, Naked bike, Scooter',
+              ),
+              onChanged: (value) {
+                _selectedModelType = value;
+              },
+            ),
           const SizedBox(height: 20),
 
           const _SectionLabel(text: '현재 주행거리'),
@@ -553,15 +670,21 @@ class _BikeRegistrationScreenState
       return;
     }
 
+    final category = _selectedModelType ?? 'Other';
+    if (category.trim().isEmpty) {
+      _showError('카테고리를 입력하세요');
+      return;
+    }
+
     setState(() => _isLoading = true);
     try {
       await ref.read(bikeListProvider.notifier).create(
             BikeCreateRequest(
               manufacturerName:
-                  _selectedManufacturer ?? _customManufacturerController.text,
+                  _selectedManufacturerDisplay ?? _customManufacturerController.text,
               modelName: _modelController.text.trim(),
               year: year,
-              category: _selectedCategory.name,
+              category: category,
               totalMileageKm: mileage,
             ),
           );

@@ -84,13 +84,9 @@ class BikeListScreen extends ConsumerWidget {
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         final bike = bikes[index];
-                        final category = BikeCategory.values.firstWhere(
-                          (c) => c.name == bike.category,
-                          orElse: () => BikeCategory.OTHER,
-                        );
                         return _BikeCard(
                           name: bike.displayName,
-                          category: category.displayName,
+                          category: BikeTypeDisplay.displayName(bike.category),
                           mileage: bike.totalMileageKm,
                           year: bike.year,
                           isRepresentative: bike.isRepresentative,

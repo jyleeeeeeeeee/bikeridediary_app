@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/network/dio_client.dart';
 import '../../../core/storage/token_storage.dart';
 import '../data/model/login_request.dart';
 import '../data/model/signup_request.dart';
@@ -7,7 +8,9 @@ import '../data/repository/auth_repository.dart';
 import 'auth_state.dart';
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier(ref.watch(authRepositoryProvider));
+  final notifier = AuthNotifier(ref.watch(authRepositoryProvider));
+  setForceLogoutCallback(() => notifier.forceLogout());
+  return notifier;
 });
 
 class AuthNotifier extends StateNotifier<AuthState> {
@@ -64,6 +67,26 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (_) {}
     await TokenStorage.clear();
     state = const AuthState(status: AuthStatus.unauthenticated);
+  }
+
+  void forceLogout() {
+    TokenStorage.clear();
+    state = const AuthState(status: AuthStatus.unauthenticated);
+  }
+
+  Future<void> continueAsGuest() async {
+    state = state.copyWith(status: AuthStatus.loading);
+    try {
+      final response = await _repository.guestSignup();
+      await TokenStorage.saveTokens(
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      );
+      state = state.copyWith(status: AuthStatus.authenticated, user: response.user);
+    } on DioException catch (e) {
+      final message = _extractError(e);
+      state = state.copyWith(status: AuthStatus.error, errorMessage: message);
+    }
   }
 
   String _extractError(DioException e) {

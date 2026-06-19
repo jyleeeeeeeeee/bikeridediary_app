@@ -23,7 +23,7 @@ class _BikeFormScreenState extends ConsumerState<BikeFormScreen> {
   late final TextEditingController _yearController;
   late final TextEditingController _mileageController;
   late final TextEditingController _memoController;
-  late BikeCategory _selectedCategory;
+  late final TextEditingController _categoryController;
   bool _isLoading = false;
 
   bool get _isEdit => widget.bike != null;
@@ -40,12 +40,9 @@ class _BikeFormScreenState extends ConsumerState<BikeFormScreen> {
       text: widget.bike?.totalMileageKm.toString() ?? '0',
     );
     _memoController = TextEditingController(text: widget.bike?.memo ?? '');
-    _selectedCategory = widget.bike != null
-        ? BikeCategory.values.firstWhere(
-            (c) => c.name == widget.bike!.category,
-            orElse: () => BikeCategory.OTHER,
-          )
-        : BikeCategory.NAKED;
+    _categoryController = TextEditingController(
+      text: widget.bike?.category ?? '',
+    );
   }
 
   @override
@@ -55,6 +52,7 @@ class _BikeFormScreenState extends ConsumerState<BikeFormScreen> {
     _yearController.dispose();
     _mileageController.dispose();
     _memoController.dispose();
+    _categoryController.dispose();
     super.dispose();
   }
 
@@ -105,18 +103,14 @@ class _BikeFormScreenState extends ConsumerState<BikeFormScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  DropdownButtonFormField<BikeCategory>(
-                    value: _selectedCategory,
-                    decoration: const InputDecoration(
+                  TextFormField(
+                    controller: _categoryController,
+                    decoration: InputDecoration(
                       labelText: '카테고리',
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
+                      helperText: BikeTypeDisplay.displayName(_categoryController.text),
                     ),
-                    items: BikeCategory.values.map((c) {
-                      return DropdownMenuItem(value: c, child: Text(c.displayName));
-                    }).toList(),
-                    onChanged: (v) {
-                      if (v != null) setState(() => _selectedCategory = v);
-                    },
+                    readOnly: true,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -167,6 +161,10 @@ class _BikeFormScreenState extends ConsumerState<BikeFormScreen> {
 
     setState(() => _isLoading = true);
     try {
+      final category = _categoryController.text.trim().isEmpty
+          ? 'Other'
+          : _categoryController.text.trim();
+
       if (_isEdit) {
         await ref.read(bikeListProvider.notifier).updateBike(
               widget.bike!.id,
@@ -174,7 +172,7 @@ class _BikeFormScreenState extends ConsumerState<BikeFormScreen> {
                 manufacturerName: _manufacturerController.text.trim(),
                 modelName: _modelController.text.trim(),
                 year: int.parse(_yearController.text),
-                category: _selectedCategory.name,
+                category: category,
                 totalMileageKm: int.parse(_mileageController.text),
                 memo: _memoController.text.trim().isEmpty ? null : _memoController.text.trim(),
               ),
@@ -185,7 +183,7 @@ class _BikeFormScreenState extends ConsumerState<BikeFormScreen> {
                 manufacturerName: _manufacturerController.text.trim(),
                 modelName: _modelController.text.trim(),
                 year: int.parse(_yearController.text),
-                category: _selectedCategory.name,
+                category: category,
                 totalMileageKm: int.parse(_mileageController.text),
               ),
             );

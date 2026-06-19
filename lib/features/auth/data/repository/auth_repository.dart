@@ -35,6 +35,12 @@ class AuthRepository {
     return AuthResponse.fromJson(response.data['data']);
   }
 
+  // 게스트 가입
+  Future<AuthResponse> guestSignup() async {
+    final response = await _dio.post('/auth/guest');
+    return AuthResponse.fromJson(response.data['data']);
+  }
+
   // 토큰 갱신
   Future<TokenResponse> refresh(String refreshToken) async {
     final response = await _dio.post(

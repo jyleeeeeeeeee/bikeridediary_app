@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/dio_client.dart';
+import '../model/bike_model_name.dart';
 import '../model/manufacturer_model.dart';
 
 final manufacturerRepositoryProvider = Provider<ManufacturerRepository>((ref) {
@@ -16,5 +17,13 @@ class ManufacturerRepository {
     final response = await _dio.get('/bike-models/manufacturers');
     final list = response.data['data'] as List;
     return list.map((e) => ManufacturerModel.fromJson(e)).toList();
+  }
+
+  Future<List<BikeModelName>> getModelNames(String manufacturerName) async {
+    final response = await _dio.get(
+      '/bike-models/manufacturers/$manufacturerName/models',
+    );
+    final list = response.data['data'] as List;
+    return list.map((e) => BikeModelName.fromJson(e as Map<String, dynamic>)).toList();
   }
 }
