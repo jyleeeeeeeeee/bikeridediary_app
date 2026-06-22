@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/api_config.dart';
 import '../storage/token_storage.dart';
 import '../../features/auth/data/model/token_response.dart';
+import 'loading_state.dart';
 
 typedef ForceLogoutCallback = void Function();
 
@@ -21,6 +22,21 @@ final dioProvider = Provider<Dio>((ref) {
     connectTimeout: ApiConfig.connectTimeout,
     receiveTimeout: ApiConfig.receiveTimeout,
     headers: {'Content-Type': 'application/json'},
+  ));
+
+  dio.interceptors.add(InterceptorsWrapper(
+    onRequest: (options, handler) {
+      ref.read(loadingCountProvider.notifier).state++;
+      handler.next(options);
+    },
+    onResponse: (response, handler) {
+      ref.read(loadingCountProvider.notifier).state--;
+      handler.next(response);
+    },
+    onError: (error, handler) {
+      ref.read(loadingCountProvider.notifier).state--;
+      handler.next(error);
+    },
   ));
 
   dio.interceptors.add(InterceptorsWrapper(

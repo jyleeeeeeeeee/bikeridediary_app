@@ -162,6 +162,7 @@ class _StatsContent extends StatelessWidget {
                 icon: Icons.water_drop,
                 label: '총 주유량',
                 value: '${stats.totalFuelAmount.toStringAsFixed(1)} L',
+                iconColor: const Color.fromARGB(255, 0, 0, 0),
               ),
             ),
             const SizedBox(width: 12),
@@ -205,12 +206,14 @@ class _StatItem extends StatelessWidget {
   final String label;
   final String value;
   final bool highlight;
+  final Color? iconColor;
 
   const _StatItem({
     required this.icon,
     required this.label,
     required this.value,
     this.highlight = false,
+    this.iconColor
   });
 
   @override
@@ -220,7 +223,8 @@ class _StatItem extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(icon, size: 14, color: highlight ? const Color(0xFFFF6B35) : Colors.white54),
+            Icon(icon, size: 14, color: highlight ? const Color(0xFFFF6B35) : 
+              iconColor == null ? Colors.white54 : Colors.black),
             const SizedBox(width: 4),
             Text(label, style: const TextStyle(color: Colors.white54, fontSize: 11)),
           ],
@@ -377,23 +381,6 @@ class _FuelingCard extends StatelessWidget {
                     style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                   ),
                   const Spacer(),
-                  // Full tank badge
-                  if (record.isFullTank)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        gradient: AppTheme.accentGradient,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Text(
-                        '만탱크',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
                   const SizedBox(width: 6),
                   // Fuel type badge
                   Container(
@@ -493,14 +480,14 @@ class _FuelingCard extends StatelessWidget {
 class _InfoChip extends StatelessWidget {
   final IconData icon;
   final String text;
-
-  const _InfoChip({required this.icon, required this.text});
+  final Color? backgroundColor;
+  const _InfoChip({required this.icon, required this.text, this.backgroundColor});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 14, color: Colors.grey[600]),
+        Icon(icon, size: 14, color: backgroundColor == null ? Colors.grey[600] : backgroundColor),
         const SizedBox(width: 4),
         Text(
           text,

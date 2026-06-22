@@ -13,6 +13,7 @@ BikeCreateRequest _$BikeCreateRequestFromJson(Map<String, dynamic> json) =>
       year: (json['year'] as num).toInt(),
       category: json['category'] as String,
       totalMileageKm: (json['totalMileageKm'] as num).toInt(),
+      isExistModel: json['isExistModel'] as bool,
     );
 
 Map<String, dynamic> _$BikeCreateRequestToJson(BikeCreateRequest instance) =>
@@ -22,4 +23,5 @@ Map<String, dynamic> _$BikeCreateRequestToJson(BikeCreateRequest instance) =>
       'year': instance.year,
       'category': instance.category,
       'totalMileageKm': instance.totalMileageKm,
+      'isExistModel': instance.isExistModel,
     };

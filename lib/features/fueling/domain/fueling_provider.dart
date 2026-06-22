@@ -20,16 +20,19 @@ class FuelingListNotifier extends FamilyAsyncNotifier<List<FuelingResponse>, Str
   Future<void> createFueling(FuelingCreateRequest request) async {
     await ref.read(fuelingRepositoryProvider).createFueling(request);
     ref.invalidateSelf();
+    ref.invalidate(fuelingStatsProvider(arg));
   }
 
   Future<void> updateFueling(String id, FuelingUpdateRequest request) async {
     await ref.read(fuelingRepositoryProvider).updateFueling(id, request);
     ref.invalidateSelf();
+    ref.invalidate(fuelingStatsProvider(arg));
   }
 
   Future<void> deleteFueling(String id) async {
     await ref.read(fuelingRepositoryProvider).deleteFueling(id);
     ref.invalidateSelf();
+    ref.invalidate(fuelingStatsProvider(arg));
   }
 }
 

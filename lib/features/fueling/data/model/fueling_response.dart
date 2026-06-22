@@ -12,7 +12,6 @@ class FuelingResponse {
   final int? pricePerLiter;
   final int? totalCost;
   final String fuelType;
-  final bool isFullTank;
   final double? fuelEfficiency;
   final String? memo;
   final String? stationName;
@@ -28,7 +27,6 @@ class FuelingResponse {
     this.pricePerLiter,
     this.totalCost,
     required this.fuelType,
-    required this.isFullTank,
     this.fuelEfficiency,
     this.memo,
     this.stationName,

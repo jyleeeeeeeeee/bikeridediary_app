@@ -8,16 +8,16 @@ part 'user_response.g.dart';
 class UserResponse {
   final String id;
   final String? provider;         // nullable — 이메일 가입이면 null
-  final String nickname;
-  final String email;
+  final String? nickname;
+  final String? email;
   final String? profileImageUrl;  // nullable — 프로필 사진 없을 수 있음
   final String createdAt;
 
   UserResponse({
     required this.id,
     this.provider,                // required 없음 = 선택 파라미터 (null 허용)
-    required this.nickname,
-    required this.email,
+    this.nickname,
+    this.email,
     this.profileImageUrl,
     required this.createdAt,
   });

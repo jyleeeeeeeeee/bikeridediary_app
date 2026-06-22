@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -48,26 +51,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // 슬로건 (로고 위에 작은 텍스트)
-                      Text(
-                        '쉽고 편한 내 바이크 관리',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF1B2838).withValues(alpha: 0.6),
-                          letterSpacing: 0.3,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      // 앱 아이콘
-                      const Icon(
-                        Icons.two_wheeler,
-                        size: 56,
-                        color: Color(0xFF1B2838),
-                      ),
-                      const SizedBox(height: 8),
+                      // Text(
+                      //   '쉽고 편한 내 바이크 관리',
+                      //   style: TextStyle(
+                      //     fontSize: 14,
+                      //     fontWeight: FontWeight.w500,
+                      //     color: const Color(0xFF1B2838).withValues(alpha: 0.6),
+                      //     letterSpacing: 0.3,
+                      //   ),
+                      // ),
+                          Transform.flip(
+                            flipX: true,
+                            child: const Text(
+                              '🏍️',
+                              style: TextStyle(fontSize: 160),
+                            ),
+                          ),
+                      // const SizedBox(height: 12),
+                      // // 앱 아이콘
+                      // const Icon(
+                      //   Icons.two_wheeler,
+                      //   size: 56,
+                      //   color: Color(0xFF1B2838),
+                      // ),
+                      // const SizedBox(height: 8),
                       // 앱 이름
                       const Text(
-                        '바라다',
+                        'Bike Ride Diary',
                         style: TextStyle(
                           fontSize: 36,
                           fontWeight: FontWeight.w800,
@@ -120,12 +130,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         height: 54,
                         child: ElevatedButton(
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('카카오 로그인은 준비 중입니다'),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
+                            ref.read(authProvider.notifier).loginWithKakao();
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFFEE500),
@@ -154,18 +159,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       const SizedBox(height: 12),
 
-                      // Apple 로그인 버튼 — 흰색 배경, 테두리
+                      // 구글 로그인 버튼 — 흰색 배경, 테두리
                       SizedBox(
                         width: double.infinity,
                         height: 54,
                         child: OutlinedButton(
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Apple 로그인은 준비 중입니다'),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
+                            ref.read(authProvider.notifier).loginWithGoogle();
                           },
                           style: OutlinedButton.styleFrom(
                             backgroundColor: Colors.white,
@@ -179,10 +179,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.apple, size: 22),
+                              Icon(Icons.g_mobiledata, size: 30),
                               SizedBox(width: 8),
                               Text(
-                                'Apple로 계속하기',
+                                'Google로 계속하기',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -192,6 +192,43 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
                       ),
+
+                      // Apple 로그인 버튼 — iOS에서만 표시
+                      if (!kIsWeb && Platform.isIOS) ...[
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 54,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              ref.read(authProvider.notifier).loginWithApple();
+                            },
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.black,
+                              elevation: 0,
+                              side: const BorderSide(color: Color(0xFFDDE1E6)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.apple, size: 22),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Apple로 계속하기',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 20),
 
                       // "가입없이 시작하기 | 로그인하기" 텍스트 링크

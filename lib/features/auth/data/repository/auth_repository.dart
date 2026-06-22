@@ -50,6 +50,18 @@ class AuthRepository {
     return TokenResponse.fromJson(response.data['data']);
   }
 
+  // 소셜 로그인
+  Future<AuthResponse> socialLogin(String provider, String credential, {String? name}) async {
+    final response = await _dio.post(
+      '/auth/login/$provider',
+      data: {
+        'credential': credential,
+        if (name != null) 'name': name,
+      },
+    );
+    return AuthResponse.fromJson(response.data['data']);
+  }
+
   // 로그아웃
   Future<void> logout() async {
     await _dio.post('/auth/logout');

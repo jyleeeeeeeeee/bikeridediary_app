@@ -9,6 +9,7 @@ class BikeCreateRequest {
   final int year;
   final String category;
   final int totalMileageKm;
+  final bool isExistModel;
 
   BikeCreateRequest({
     required this.manufacturerName,
@@ -16,6 +17,7 @@ class BikeCreateRequest {
     required this.year,
     required this.category,
     required this.totalMileageKm,
+    required this.isExistModel,
   });
 
   Map<String, dynamic> toJson() => _$BikeCreateRequestToJson(this);

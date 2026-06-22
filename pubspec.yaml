@@ -32,6 +32,15 @@ dependencies:
   # JSON 직렬화 — Spring의 Jackson 역할
   json_annotation: ^4.9.0
 
+  # 환경변수
+  flutter_dotenv: ^5.2.1
+
+  # 소셜 로그인
+  kakao_flutter_sdk_user: ^1.9.5
+  google_sign_in: ^6.2.2
+  sign_in_with_apple: ^6.1.4
+  crypto: ^3.0.6
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -40,6 +49,10 @@ dev_dependencies:
   # JSON 코드 생성 — @JsonSerializable 어노테이션으로 fromJson/toJson 자동 생성
   json_serializable: ^6.9.4
   build_runner: ^2.4.14
+  image: ^4.9.1
 
 flutter:
   uses-material-design: true
+  assets:
+    - .env
+    - assets/images/

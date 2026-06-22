@@ -9,8 +9,8 @@ part of 'user_response.dart';
 UserResponse _$UserResponseFromJson(Map<String, dynamic> json) => UserResponse(
   id: json['id'] as String,
   provider: json['provider'] as String?,
-  nickname: json['nickname'] as String,
-  email: json['email'] as String,
+  nickname: json['nickname'] as String?,
+  email: json['email'] as String?,
   profileImageUrl: json['profileImageUrl'] as String?,
   createdAt: json['createdAt'] as String,
 );

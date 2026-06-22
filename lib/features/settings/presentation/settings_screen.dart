@@ -25,9 +25,9 @@ class SettingsScreen extends ConsumerWidget {
                     radius: 28,
                     backgroundColor: const Color(0xFF1B2838),
                     child: Text(
-                      authState.user?.nickname.isNotEmpty == true
-                          ? authState.user!.nickname[0]
-                          : '?',
+                      authState.user?.nickname!.isNotEmpty == true
+                          ? authState.user!.nickname![0]
+                          : '',
                       style: const TextStyle(
                           color: Colors.white, fontSize: 22, fontWeight: FontWeight.w600),
                     ),
@@ -43,7 +43,9 @@ class SettingsScreen extends ConsumerWidget {
                         ),
                         if (authState.user?.email != null)
                           Text(
-                            authState.user!.email,
+                            authState.user!.email?.isNotEmpty == true
+                                ? authState.user!.email!
+                                : '',
                             style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
                           ),
                       ],

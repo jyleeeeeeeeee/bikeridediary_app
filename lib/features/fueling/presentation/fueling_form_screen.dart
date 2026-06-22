@@ -21,7 +21,6 @@ class _FuelingFormScreenState extends ConsumerState<FuelingFormScreen> {
   final _formKey = GlobalKey<FormState>();
   String? _selectedBikeId;
   late FuelType _fuelType;
-  late bool _isFullTank;
   late final TextEditingController _dateCtl;
   late final TextEditingController _mileageCtl;
   late final TextEditingController _amountCtl;
@@ -42,7 +41,6 @@ class _FuelingFormScreenState extends ConsumerState<FuelingFormScreen> {
     _fuelType = f != null
         ? FuelType.values.firstWhere((t) => t.name == f.fuelType, orElse: () => FuelType.PREMIUM)
         : FuelType.PREMIUM;
-    _isFullTank = f?.isFullTank ?? true;
     _dateCtl = TextEditingController(
         text: f?.fuelingDate ?? DateTime.now().toString().substring(0, 10));
     _mileageCtl = TextEditingController(text: f?.mileageAtFueling.toString() ?? '');
@@ -225,19 +223,8 @@ class _FuelingFormScreenState extends ConsumerState<FuelingFormScreen> {
                       if (v != null) setState(() => _fuelType = v);
                     },
                   ),
-                  const SizedBox(height: 12),
 
-                  // 만탱크 스위치
-                  Card(
-                    child: SwitchListTile(
-                      title: const Text('만탱크 주유'),
-                      subtitle: const Text('연비 계산에 필요합니다'),
-                      value: _isFullTank,
-                      activeColor: const Color(0xFFFF6B35),
-                      onChanged: (v) => setState(() => _isFullTank = v),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
 
                   // 주유소명
                   TextFormField(
@@ -298,7 +285,6 @@ class _FuelingFormScreenState extends ConsumerState<FuelingFormScreen> {
             pricePerLiter: price,
             totalCost: cost,
             fuelType: _fuelType.name,
-            isFullTank: _isFullTank,
             memo: memo,
             stationName: station,
           ),
@@ -313,7 +299,6 @@ class _FuelingFormScreenState extends ConsumerState<FuelingFormScreen> {
             pricePerLiter: price,
             totalCost: cost,
             fuelType: _fuelType.name,
-            isFullTank: _isFullTank,
             memo: memo,
             stationName: station,
           ),

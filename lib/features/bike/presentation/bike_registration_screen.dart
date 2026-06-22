@@ -739,6 +739,7 @@ class _BikeRegistrationScreenState
               year: year,
               category: category,
               totalMileageKm: mileage,
+              isExistModel: _selectedModelName != null,
             ),
           );
       if (mounted) context.pop();

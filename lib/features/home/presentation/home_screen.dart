@@ -46,7 +46,8 @@ class HomeScreen extends ConsumerWidget {
                 // ── Custom gradient header ──────────────────────────────────
                 SliverToBoxAdapter(
                   child: _HomeHeader(
-                    bike: repBike,
+                    bike: repBike
+                    ,
                     onLogout: () => ref.read(authProvider.notifier).logout(),
                   ),
                 ),
@@ -188,11 +189,12 @@ class _HomeHeader extends StatelessWidget {
                       ],
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.logout_rounded, color: Colors.white70),
-                    tooltip: '로그아웃',
-                    onPressed: onLogout,
-                  ),
+                  // IconButton(
+                  //   icon: const Icon(Icons.logout_rounded, color: Colors.white70),
+                  //   tooltip: '로그아웃',
+                  //   onPressed: onLogout,
+                  // ),
+                  
                 ],
               ),
               const SizedBox(height: 16),

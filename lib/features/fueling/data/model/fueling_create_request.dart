@@ -11,7 +11,6 @@ class FuelingCreateRequest {
   final int? pricePerLiter;
   final int? totalCost;
   final String fuelType;
-  final bool isFullTank;
   final String? memo;
   final String? stationName;
 
@@ -23,7 +22,6 @@ class FuelingCreateRequest {
     this.pricePerLiter,
     this.totalCost,
     required this.fuelType,
-    required this.isFullTank,
     this.memo,
     this.stationName,
   });

@@ -185,8 +185,9 @@ class _BikeCard extends StatelessWidget {
                               '대표',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 10,
+                                fontSize: 8,
                                 fontWeight: FontWeight.w700,
+                                
                               ),
                             ),
                           ),

@@ -185,6 +185,7 @@ class _BikeFormScreenState extends ConsumerState<BikeFormScreen> {
                 year: int.parse(_yearController.text),
                 category: category,
                 totalMileageKm: int.parse(_mileageController.text),
+                isExistModel: false,
               ),
             );
       }
