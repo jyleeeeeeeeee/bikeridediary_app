@@ -48,7 +48,8 @@ final dioProvider = Provider<Dio>((ref) {
       handler.next(options);
     },
     onError: (error, handler) async {
-      if (error.response?.statusCode != 401) {
+      final statusCode = error.response?.statusCode;
+      if (statusCode != 401) {
         return handler.next(error);
       }
 

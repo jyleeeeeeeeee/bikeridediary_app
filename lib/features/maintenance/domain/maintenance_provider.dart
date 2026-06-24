@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../bike/domain/bike_provider.dart';
 import '../data/model/maintenance_create_request.dart';
 import '../data/model/maintenance_response.dart';
 import '../data/model/maintenance_schedule_create_request.dart';
@@ -6,6 +7,11 @@ import '../data/model/maintenance_schedule_response.dart';
 import '../data/model/maintenance_schedule_update_request.dart';
 import '../data/model/maintenance_update_request.dart';
 import '../data/repository/maintenance_repository.dart';
+
+final maintenanceDetailProvider =
+    FutureProvider.family<MaintenanceResponse, String>((ref, id) {
+  return ref.watch(maintenanceRepositoryProvider).getMaintenance(id);
+});
 
 // bikeId를 파라미터로 받아 해당 바이크의 정비 기록 목록을 관리
 final maintenanceListProvider =
@@ -22,16 +28,27 @@ class MaintenanceListNotifier extends FamilyAsyncNotifier<List<MaintenanceRespon
   Future<void> createMaintenance(MaintenanceCreateRequest request) async {
     await ref.read(maintenanceRepositoryProvider).createMaintenance(request);
     ref.invalidateSelf();
+    ref.invalidate(bikeListProvider);
+    ref.invalidate(bikeDetailProvider(arg));
+    ref.invalidate(scheduleListProvider(arg));
   }
 
   Future<void> updateMaintenance(String id, MaintenanceUpdateRequest request) async {
     await ref.read(maintenanceRepositoryProvider).updateMaintenance(id, request);
     ref.invalidateSelf();
+    ref.invalidate(maintenanceDetailProvider(id));
+    ref.invalidate(bikeListProvider);
+    ref.invalidate(bikeDetailProvider(arg));
+    ref.invalidate(scheduleListProvider(arg));
   }
 
   Future<void> deleteMaintenance(String id) async {
     await ref.read(maintenanceRepositoryProvider).deleteMaintenance(id);
     ref.invalidateSelf();
+    ref.invalidate(maintenanceDetailProvider(id));
+    ref.invalidate(bikeListProvider);
+    ref.invalidate(bikeDetailProvider(arg));
+    ref.invalidate(scheduleListProvider(arg));
   }
 }
 

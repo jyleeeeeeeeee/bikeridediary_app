@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/domain/auth_provider.dart';
-import '../../auth/domain/auth_state.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});

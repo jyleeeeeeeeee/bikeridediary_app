@@ -1,7 +1,5 @@
-import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -9,21 +7,25 @@ import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao;
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/storage/token_storage.dart';
+import '../../bike/domain/bike_provider.dart';
+import '../../fueling/domain/fueling_provider.dart';
+import '../../maintenance/domain/maintenance_provider.dart';
 import '../data/model/login_request.dart';
 import '../data/model/signup_request.dart';
 import '../data/repository/auth_repository.dart';
 import 'auth_state.dart';
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  final notifier = AuthNotifier(ref.watch(authRepositoryProvider));
+  final notifier = AuthNotifier(ref.watch(authRepositoryProvider), ref);
   setForceLogoutCallback(() => notifier.forceLogout());
   return notifier;
 });
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _repository;
+  final Ref _ref;
 
-  AuthNotifier(this._repository) : super(const AuthState());
+  AuthNotifier(this._repository, this._ref) : super(const AuthState());
 
   Future<void> checkAuth() async {
     final token = await TokenStorage.getAccessToken();
@@ -44,6 +46,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
       );
+      _invalidateAllData();
       state = state.copyWith(status: AuthStatus.authenticated, user: response.user);
     } on DioException catch (e) {
       final message = _extractError(e);
@@ -61,6 +64,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
       );
+      _invalidateAllData();
       state = state.copyWith(status: AuthStatus.authenticated, user: response.user);
     } on DioException catch (e) {
       final message = _extractError(e);
@@ -73,12 +77,24 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _repository.logout();
     } catch (_) {}
     await TokenStorage.clear();
+    _invalidateAllData();
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
   void forceLogout() {
     TokenStorage.clear();
+    _invalidateAllData();
     state = const AuthState(status: AuthStatus.unauthenticated);
+  }
+
+  void _invalidateAllData() {
+    _ref.invalidate(bikeListProvider);
+    _ref.invalidate(bikeDetailProvider);
+    _ref.invalidate(fuelingListProvider);
+    _ref.invalidate(fuelingStatsProvider);
+    _ref.invalidate(maintenanceListProvider);
+    _ref.invalidate(maintenanceDetailProvider);
+    _ref.invalidate(scheduleListProvider);
   }
 
   Future<void> loginWithKakao() async {
@@ -96,6 +112,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
       );
+      _invalidateAllData();
       state = state.copyWith(status: AuthStatus.authenticated, user: response.user);
     } on DioException catch (e) {
       final message = _extractError(e);
@@ -129,6 +146,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
       );
+      _invalidateAllData();
       state = state.copyWith(status: AuthStatus.authenticated, user: response.user);
     } on DioException catch (e) {
       final message = _extractError(e);
@@ -166,6 +184,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
       );
+      _invalidateAllData();
       state = state.copyWith(status: AuthStatus.authenticated, user: response.user);
     } on DioException catch (e) {
       final message = _extractError(e);
@@ -185,6 +204,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
       );
+      _invalidateAllData();
       state = state.copyWith(status: AuthStatus.authenticated, user: response.user);
     } on DioException catch (e) {
       final message = _extractError(e);

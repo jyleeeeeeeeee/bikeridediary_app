@@ -40,14 +40,18 @@ class HomeScreen extends ConsumerWidget {
           );
 
           return RefreshIndicator(
-            onRefresh: () => ref.refresh(bikeListProvider.future),
+            onRefresh: () {
+              ref.invalidate(scheduleListProvider(repBike.id));
+              ref.invalidate(fuelingStatsProvider(repBike.id));
+              return ref.refresh(bikeListProvider.future);
+            },
             child: CustomScrollView(
               slivers: [
                 // ── Custom gradient header ──────────────────────────────────
                 SliverToBoxAdapter(
                   child: _HomeHeader(
-                    bike: repBike
-                    ,
+                    bike: repBike,
+                    nickname: ref.watch(authProvider).user?.nickname,
                     onLogout: () => ref.read(authProvider.notifier).logout(),
                   ),
                 ),
@@ -63,7 +67,7 @@ class HomeScreen extends ConsumerWidget {
                       _OverdueSection(
                         bikeId: repBike.id,
                         onTap: () => context
-                            .push('/bikes/${repBike.id}/maintenances'),
+                            .go('/bikes/${repBike.id}/maintenances'),
                       ),
                       // Quick actions grid
                       _QuickActionsGrid(bike: repBike),
@@ -142,9 +146,10 @@ class _EmptyBikeView extends StatelessWidget {
 
 class _HomeHeader extends StatelessWidget {
   final BikeResponse bike;
+  final String? nickname;
   final VoidCallback onLogout;
 
-  const _HomeHeader({required this.bike, required this.onLogout});
+  const _HomeHeader({required this.bike, this.nickname, required this.onLogout});
 
   @override
   Widget build(BuildContext context) {
@@ -177,13 +182,21 @@ class _HomeHeader extends StatelessWidget {
                               ),
                         ),
                         const SizedBox(height: 2),
-                        const Text(
-                          '바라다',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                            letterSpacing: -0.5,
+                        Text.rich(
+                          TextSpan(
+                            text: nickname ?? '라이더',
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: -0.5,
+                            ),
+                            children: const [
+                              TextSpan(
+                                text: '님',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -200,7 +213,7 @@ class _HomeHeader extends StatelessWidget {
               const SizedBox(height: 16),
               // Representative bike info card (white on dark)
               GestureDetector(
-                onTap: () => context.push('/bikes/${bike.id}'),
+                onTap: () => context.go('/bikes/${bike.id}'),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -415,7 +428,7 @@ class _OverdueSection extends ConsumerWidget {
 
     return schedulesAsync.when(
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
       data: (schedules) {
         final overdue = schedules.where((s) => s.overdue).toList();
         if (overdue.isEmpty) return const SizedBox.shrink();
@@ -530,19 +543,24 @@ class _QuickActionsGrid extends StatelessWidget {
               icon: Icons.build_rounded,
               label: '정비 기록',
               iconColor: const Color(0xFF1B2838),
-              onTap: () => context.push('/bikes/${bike.id}/maintenances'),
+              onTap: () => context.go('/maintenance'),
             ),
             _QuickActionCard(
               icon: Icons.local_gas_station_rounded,
               label: '주유 기록',
               iconColor: const Color(0xFFFF6B35),
-              onTap: () => context.push('/fuel'),
+              onTap: () {
+                context.go('/fuel');
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  context.push('/fuel/new');
+                });
+              },
             ),
             _QuickActionCard(
               icon: Icons.directions_bike_rounded,
               label: '바이크 상세',
               iconColor: const Color(0xFF2D4059),
-              onTap: () => context.push('/bikes/${bike.id}'),
+              onTap: () => context.go('/bikes/${bike.id}'),
             ),
             _QuickActionCard(
               icon: Icons.ev_station_rounded,

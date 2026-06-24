@@ -56,7 +56,7 @@ class AuthRepository {
       '/auth/login/$provider',
       data: {
         'credential': credential,
-        if (name != null) 'name': name,
+        'name': ?name,
       },
     );
     return AuthResponse.fromJson(response.data['data']);

@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../bike/domain/bike_provider.dart';
+import '../../maintenance/domain/maintenance_provider.dart';
 import '../data/model/fueling_create_request.dart';
 import '../data/model/fueling_response.dart';
 import '../data/model/fueling_stats_response.dart';
@@ -21,18 +23,27 @@ class FuelingListNotifier extends FamilyAsyncNotifier<List<FuelingResponse>, Str
     await ref.read(fuelingRepositoryProvider).createFueling(request);
     ref.invalidateSelf();
     ref.invalidate(fuelingStatsProvider(arg));
+    ref.invalidate(bikeListProvider);
+    ref.invalidate(bikeDetailProvider(arg));
+    ref.invalidate(scheduleListProvider(arg));
   }
 
   Future<void> updateFueling(String id, FuelingUpdateRequest request) async {
     await ref.read(fuelingRepositoryProvider).updateFueling(id, request);
     ref.invalidateSelf();
     ref.invalidate(fuelingStatsProvider(arg));
+    ref.invalidate(bikeListProvider);
+    ref.invalidate(bikeDetailProvider(arg));
+    ref.invalidate(scheduleListProvider(arg));
   }
 
   Future<void> deleteFueling(String id) async {
     await ref.read(fuelingRepositoryProvider).deleteFueling(id);
     ref.invalidateSelf();
     ref.invalidate(fuelingStatsProvider(arg));
+    ref.invalidate(bikeListProvider);
+    ref.invalidate(bikeDetailProvider(arg));
+    ref.invalidate(scheduleListProvider(arg));
   }
 }
 

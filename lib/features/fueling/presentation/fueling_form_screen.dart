@@ -110,7 +110,7 @@ class _FuelingFormScreenState extends ConsumerState<FuelingFormScreen> {
                       loading: () => const LinearProgressIndicator(),
                       error: (e, _) => Text('바이크 목록 로드 실패: $e'),
                       data: (bikes) => DropdownButtonFormField<String>(
-                        value: _selectedBikeId,
+                        initialValue: _selectedBikeId,
                         decoration: const InputDecoration(
                           labelText: '바이크',
                           prefixIcon: Icon(Icons.two_wheeler),
@@ -212,7 +212,7 @@ class _FuelingFormScreenState extends ConsumerState<FuelingFormScreen> {
 
                   // 연료 종류
                   DropdownButtonFormField<FuelType>(
-                    value: _fuelType,
+                    initialValue: _fuelType,
                     decoration: const InputDecoration(
                       labelText: '연료 종류',
                       prefixIcon: Icon(Icons.oil_barrel),

@@ -4,6 +4,10 @@ import '../data/model/bike_response.dart';
 import '../data/model/bike_update_request.dart';
 import '../data/repository/bike_repository.dart';
 
+final bikeDetailProvider = FutureProvider.family<BikeResponse, String>((ref, bikeId) {
+  return ref.watch(bikeRepositoryProvider).getBike(bikeId);
+});
+
 final bikeListProvider = AsyncNotifierProvider<BikeListNotifier, List<BikeResponse>>(
   BikeListNotifier.new,
 );
@@ -22,15 +26,18 @@ class BikeListNotifier extends AsyncNotifier<List<BikeResponse>> {
   Future<void> updateBike(String bikeId, BikeUpdateRequest request) async {
     await ref.read(bikeRepositoryProvider).updateBike(bikeId, request);
     ref.invalidateSelf();
+    ref.invalidate(bikeDetailProvider(bikeId));
   }
 
   Future<void> delete(String bikeId) async {
     await ref.read(bikeRepositoryProvider).deleteBike(bikeId);
     ref.invalidateSelf();
+    ref.invalidate(bikeDetailProvider(bikeId));
   }
 
   Future<void> setRepresentative(String bikeId) async {
     await ref.read(bikeRepositoryProvider).setRepresentative(bikeId);
     ref.invalidateSelf();
+    ref.invalidate(bikeDetailProvider(bikeId));
   }
 }

@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/model/bike_category.dart';
 import '../data/model/bike_response.dart';
-import '../data/repository/bike_repository.dart';
 import '../domain/bike_provider.dart';
 import '../../maintenance/domain/maintenance_provider.dart';
 import '../../fueling/domain/fueling_provider.dart';
@@ -12,10 +11,6 @@ import '../../fueling/domain/fueling_provider.dart';
 String _fmt(num n) => n
     .toString()
     .replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
-
-final bikeDetailProvider = FutureProvider.family<BikeResponse, String>((ref, bikeId) {
-  return ref.watch(bikeRepositoryProvider).getBike(bikeId);
-});
 
 class BikeDetailScreen extends ConsumerWidget {
   final String bikeId;
@@ -72,7 +67,6 @@ class _BikeDetailBody extends ConsumerWidget {
                     break;
                   case 'representative':
                     await ref.read(bikeListProvider.notifier).setRepresentative(bikeId);
-                    ref.invalidate(bikeDetailProvider(bikeId));
                     break;
                   case 'delete':
                     final confirm = await showDialog<bool>(
@@ -91,6 +85,10 @@ class _BikeDetailBody extends ConsumerWidget {
                     );
                     if (confirm == true && context.mounted) {
                       await ref.read(bikeListProvider.notifier).delete(bikeId);
+                      ref.invalidate(fuelingListProvider(bikeId));
+                      ref.invalidate(fuelingStatsProvider(bikeId));
+                      ref.invalidate(maintenanceListProvider(bikeId));
+                      ref.invalidate(scheduleListProvider(bikeId));
                       if (context.mounted) context.pop();
                     }
                     break;
@@ -98,7 +96,7 @@ class _BikeDetailBody extends ConsumerWidget {
               },
               itemBuilder: (_) => [
                 const PopupMenuItem(value: 'edit', child: Text('수정')),
-                const PopupMenuItem(value: 'representative', child: Text('대표 바이크 설정')),
+                const PopupMenuItem(value: 'representative', child: Text('메인 바이크 설정')),
                 const PopupMenuItem(
                   value: 'delete',
                   child: Text('삭제', style: TextStyle(color: Colors.red)),
@@ -159,7 +157,7 @@ class _BikeDetailBody extends ConsumerWidget {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${categoryName} · ${bike.year}년식',
+                                  '$categoryName · ${bike.year}년식',
                                   style: const TextStyle(
                                     fontSize: 13,
                                     color: Colors.white70,

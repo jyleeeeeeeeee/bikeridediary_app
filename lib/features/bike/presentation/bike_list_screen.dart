@@ -85,7 +85,8 @@ class BikeListScreen extends ConsumerWidget {
                       (context, index) {
                         final bike = bikes[index];
                         return _BikeCard(
-                          name: bike.displayName,
+                          manufacturer: bike.manufacturerName,
+                          model: bike.modelName,
                           category: BikeTypeDisplay.displayName(bike.category),
                           mileage: bike.totalMileageKm,
                           year: bike.year,
@@ -112,7 +113,8 @@ class BikeListScreen extends ConsumerWidget {
 }
 
 class _BikeCard extends StatelessWidget {
-  final String name;
+  final String manufacturer;
+  final String model;
   final String category;
   final int mileage;
   final int year;
@@ -120,7 +122,8 @@ class _BikeCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const _BikeCard({
-    required this.name,
+    required this.manufacturer,
+    required this.model,
     required this.category,
     required this.mileage,
     required this.year,
@@ -160,45 +163,30 @@ class _BikeCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF1B2838),
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (isRepresentative) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              gradient: AppTheme.accentGradient,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text(
-                              '대표',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 8,
-                                fontWeight: FontWeight.w700,
-                                
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 4),
                     Text(
-                      '$category · ${year}년식',
+                      manufacturer,
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey[600],
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      model,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1B2838),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '$category · $year년식',
+                      style: TextStyle(
+                        fontSize: 12,
                         color: Colors.grey[500],
                       ),
                     ),
@@ -208,21 +196,46 @@ class _BikeCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    _formatNumber(mileage),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF1B2838),
+                  if (isRepresentative)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        gradient: AppTheme.accentGradient,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text(
+                        'Main',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
-                  ),
-                  Text(
-                    'km',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey[500],
-                      fontWeight: FontWeight.w500,
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        _formatNumber(mileage),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF1B2838),
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      Text(
+                        'km',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[500],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

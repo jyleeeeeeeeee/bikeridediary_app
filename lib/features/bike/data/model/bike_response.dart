@@ -14,6 +14,8 @@ class BikeResponse {
   final String? purchasedAt;
   final String? photoUrl;
   final String? memo;
+  final double? latestFuelEfficiency;
+  final double? averageFuelEfficiency;
   final String createdAt;
 
   BikeResponse({
@@ -27,6 +29,8 @@ class BikeResponse {
     this.purchasedAt,
     this.photoUrl,
     this.memo,
+    this.latestFuelEfficiency,
+    this.averageFuelEfficiency,
     required this.createdAt,
   });
 

@@ -16,14 +16,16 @@ class FuelingListScreen extends ConsumerStatefulWidget {
   ConsumerState<FuelingListScreen> createState() => _FuelingListScreenState();
 }
 
+final double iconSize = 18;
 class _FuelingListScreenState extends ConsumerState<FuelingListScreen> {
   String? _selectedBikeId;
   bool _didInit = false;
 
   // Format numbers with comma separators (e.g., 12345 → "12,345")
-  String _formatNumber(num n) => n
-      .toString()
-      .replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
+  String _formatNumber(num n) => n.toString().replaceAllMapped(
+    RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+    (m) => '${m[1]},',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +35,8 @@ class _FuelingListScreenState extends ConsumerState<FuelingListScreen> {
     if (!_didInit && bikesAsync.hasValue && bikesAsync.value!.isNotEmpty) {
       _didInit = true;
       final bikes = bikesAsync.value!;
-      final rep = bikes.where((b) => b.isRepresentative).firstOrNull ?? bikes.first;
+      final rep =
+          bikes.where((b) => b.isRepresentative).firstOrNull ?? bikes.first;
       // Use addPostFrameCallback to avoid calling setState during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && _selectedBikeId == null) {
@@ -115,10 +118,14 @@ class _StatsHeader extends ConsumerWidget {
         loading: () => const Center(
           child: CircularProgressIndicator(color: Colors.white54),
         ),
-        error: (_, __) => const Center(
-          child: Text('통계를 불러올 수 없습니다', style: TextStyle(color: Colors.white70)),
+        error: (_, _) => const Center(
+          child: Text(
+            '통계를 불러올 수 없습니다',
+            style: TextStyle(color: Colors.white70),
+          ),
         ),
-        data: (stats) => _StatsContent(stats: stats, formatNumber: formatNumber),
+        data: (stats) =>
+            _StatsContent(stats: stats, formatNumber: formatNumber),
       ),
     );
   }
@@ -153,7 +160,9 @@ class _StatsContent extends StatelessWidget {
                 value: stats.averageFuelEfficiency != null
                     ? '${stats.averageFuelEfficiency!.toStringAsFixed(1)} km/L'
                     : '–',
-                highlight: true,
+                highlight: false,
+                iconColor: Colors.blue,
+                iconSize: iconSize,
               ),
             ),
             const SizedBox(width: 12),
@@ -162,15 +171,18 @@ class _StatsContent extends StatelessWidget {
                 icon: Icons.water_drop,
                 label: '총 주유량',
                 value: '${stats.totalFuelAmount.toStringAsFixed(1)} L',
-                iconColor: const Color.fromARGB(255, 0, 0, 0),
+                iconColor: Colors.black,
+                iconSize: iconSize,
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: _StatItem(
-                icon: Icons.receipt_long,
+                icon: Icons.attach_money,
                 label: '총 비용',
                 value: '${formatNumber(stats.totalCost)}원',
+                iconColor: Colors.green,
+                iconSize: iconSize,
               ),
             ),
           ],
@@ -186,7 +198,11 @@ class _StatsContent extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.trending_up, size: 14, color: Color(0xFFFF8F5E)),
+                const Icon(
+                  Icons.trending_up,
+                  size: 20,
+                  color: Color(0xFFFF8F5E),
+                ),
                 const SizedBox(width: 6),
                 Text(
                   '최근 연비 ${stats.latestFuelEfficiency!.toStringAsFixed(1)} km/L',
@@ -207,13 +223,15 @@ class _StatItem extends StatelessWidget {
   final String value;
   final bool highlight;
   final Color? iconColor;
+  final double? iconSize;
 
   const _StatItem({
     required this.icon,
     required this.label,
     required this.value,
     this.highlight = false,
-    this.iconColor
+    this.iconColor,
+    this.iconSize,
   });
 
   @override
@@ -223,10 +241,18 @@ class _StatItem extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(icon, size: 14, color: highlight ? const Color(0xFFFF6B35) : 
-              iconColor == null ? Colors.white54 : Colors.black),
+            Icon(
+              icon,
+              size: iconSize ?? 14,
+              color: highlight
+                  ? const Color(0xFFFF6B35)
+                  : iconColor ?? Colors.white54,
+            ),
             const SizedBox(width: 4),
-            Text(label, style: const TextStyle(color: Colors.white54, fontSize: 11)),
+            Text(
+              label,
+              style: const TextStyle(color: Colors.white54, fontSize: 11),
+            ),
           ],
         ),
         const SizedBox(height: 4),
@@ -284,7 +310,11 @@ class _BikeSelectorBar extends StatelessWidget {
                         Text(b.displayName as String),
                         if (b.isRepresentative as bool) ...[
                           const SizedBox(width: 6),
-                          const Icon(Icons.star, size: 14, color: Color(0xFFFF6B35)),
+                          const Icon(
+                            Icons.star,
+                            size: 14,
+                            color: Colors.yellow,
+                          ),
                         ],
                       ],
                     ),
@@ -326,11 +356,60 @@ class _FuelingList extends ConsumerWidget {
           child: ListView.builder(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
             itemCount: records.length,
-            itemBuilder: (context, index) => _FuelingCard(
-              record: records[index],
-              formatNumber: formatNumber,
-              onTap: () => context.push('/fuel/${records[index].id}/edit', extra: records[index]),
-            ),
+            itemBuilder: (context, index) {
+              final record = records[index];
+              return Dismissible(
+                key: Key(record.id),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 24),
+                  child: const Icon(Icons.delete, color: Colors.white),
+                ),
+                confirmDismiss: (direction) async {
+                  return await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('주유 기록 삭제'),
+                          content: const Text('이 주유 기록을 삭제하시겠습니까?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: const Text('취소'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.red,
+                              ),
+                              child: const Text('삭제'),
+                            ),
+                          ],
+                        ),
+                      ) ??
+                      false;
+                },
+                onDismissed: (direction) {
+                  ref
+                      .read(fuelingListProvider(bikeId).notifier)
+                      .deleteFueling(record.id);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('주유 기록이 삭제되었습니다')),
+                  );
+                },
+                child: _FuelingCard(
+                  record: record,
+                  formatNumber: formatNumber,
+                  onTap: () =>
+                      context.push('/fuel/${record.id}/edit', extra: record),
+                ),
+              );
+            },
           ),
         );
       },
@@ -352,9 +431,9 @@ class _FuelingCard extends StatelessWidget {
   });
 
   FuelType get _fuelType => FuelType.values.firstWhere(
-        (t) => t.name == record.fuelType,
-        orElse: () => FuelType.REGULAR,
-      );
+    (t) => t.name == record.fuelType,
+    orElse: () => FuelType.REGULAR,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -374,17 +453,26 @@ class _FuelingCard extends StatelessWidget {
               // Top row: date + badges
               Row(
                 children: [
-                  const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                  const Icon(
+                    Icons.calendar_month,
+                    size: 14,
+                    color: Colors.red,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     record.fuelingDate,
-                    style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[600],
+                    ),
                   ),
                   const Spacer(),
                   const SizedBox(width: 6),
                   // Fuel type badge
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF1B2838).withAlpha(13),
                       borderRadius: BorderRadius.circular(20),
@@ -405,7 +493,11 @@ class _FuelingCard extends StatelessWidget {
               if (record.stationName != null) ...[
                 Row(
                   children: [
-                    const Icon(Icons.location_on, size: 14, color: Color(0xFFFF6B35)),
+                    Icon(
+                      Icons.location_on,
+                      size: iconSize,
+                      color: const Color(0xFFFF6B35),
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       record.stationName!,
@@ -421,34 +513,44 @@ class _FuelingCard extends StatelessWidget {
               Row(
                 children: [
                   _InfoChip(
-                    icon: Icons.water_drop_outlined,
+                    icon: Icons.water_drop,
                     text: '${record.fuelAmount.toStringAsFixed(1)} L',
+                    iconColor: Colors.black,
+                    size: iconSize,
                   ),
                   const SizedBox(width: 12),
                   if (record.totalCost != null)
                     _InfoChip(
-                      icon: Icons.payments_outlined,
+                      icon: Icons.attach_money,
                       text: '${formatNumber(record.totalCost!)}원',
+                      iconColor: Colors.green,
+                      size: iconSize,
                     ),
                   const Spacer(),
                   // Fuel efficiency highlight
                   if (record.fuelEfficiency != null)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: Colors.green.shade50,
+                        color: Colors.blue.shade50,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.local_gas_station,
-                              size: 14, color: Colors.green.shade700),
+                          Icon(
+                            Icons.local_gas_station,
+                            size: iconSize,
+                            color: Colors.blue.shade700,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             '${record.fuelEfficiency!.toStringAsFixed(1)} km/L',
                             style: TextStyle(
-                              color: Colors.green.shade700,
-                              fontSize: 13,
+                              color: Colors.blue.shade700,
+                              fontSize: 15,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -461,11 +563,13 @@ class _FuelingCard extends StatelessWidget {
               const SizedBox(height: 6),
               Row(
                 children: [
-                  const Icon(Icons.speed, size: 14, color: Colors.grey),
+                  Icon(Icons.speed, size: iconSize, color: Colors.red),
                   const SizedBox(width: 4),
                   Text(
                     '${formatNumber(record.mileageAtFueling)} km',
-                    style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[600],
+                    ),
                   ),
                 ],
               ),
@@ -480,14 +584,24 @@ class _FuelingCard extends StatelessWidget {
 class _InfoChip extends StatelessWidget {
   final IconData icon;
   final String text;
-  final Color? backgroundColor;
-  const _InfoChip({required this.icon, required this.text, this.backgroundColor});
+  final Color? iconColor;
+  final double? size;
+  const _InfoChip({
+    required this.icon,
+    required this.text,
+    this.iconColor,
+    this.size
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 14, color: backgroundColor == null ? Colors.grey[600] : backgroundColor),
+        Icon(
+          icon,
+          size: size ?? 14,
+          color: iconColor == null ? Colors.grey[600] : iconColor,
+        ),
         const SizedBox(width: 4),
         Text(
           text,

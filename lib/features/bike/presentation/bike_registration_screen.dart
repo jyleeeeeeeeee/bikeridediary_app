@@ -308,7 +308,7 @@ class _BikeRegistrationScreenState
                   ? Image.network(
                       logoFullUrl,
                       fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) =>
+                      errorBuilder: (_, _, _) =>
                           _buildInitialAvatar(mfr.displayNameKo),
                     )
                   : _buildInitialAvatar(mfr.displayNameKo),
@@ -531,7 +531,7 @@ class _BikeRegistrationScreenState
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       itemCount: filtered.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
+      separatorBuilder: (_, _) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final model = filtered[index];
         final isSelected = _selectedModelName == model.name;

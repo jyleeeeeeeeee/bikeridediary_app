@@ -3,18 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/model/maintenance_type.dart';
-import '../data/repository/maintenance_repository.dart';
-import '../data/model/maintenance_response.dart';
 import '../domain/maintenance_provider.dart';
 
 String _fmt(num n) => n
     .toString()
     .replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
-
-final maintenanceDetailProvider =
-    FutureProvider.family<MaintenanceResponse, String>((ref, id) {
-  return ref.watch(maintenanceRepositoryProvider).getMaintenance(id);
-});
 
 class MaintenanceDetailScreen extends ConsumerWidget {
   final String bikeId;

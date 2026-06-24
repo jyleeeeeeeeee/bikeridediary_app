@@ -63,7 +63,7 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
                 children: [
                   if (!_isEdit)
                     DropdownButtonFormField<MaintenanceType>(
-                      value: _selectedType,
+                      initialValue: _selectedType,
                       decoration: const InputDecoration(
                         labelText: '정비 종류',
                         border: OutlineInputBorder(),

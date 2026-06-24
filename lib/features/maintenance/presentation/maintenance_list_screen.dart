@@ -171,20 +171,31 @@ class _MaintenanceTab extends ConsumerWidget {
                                 ),
                               ),
                               const SizedBox(height: 3),
-                              Row(
+                              Wrap(
+                                spacing: 10,
+                                runSpacing: 2,
                                 children: [
-                                  Icon(Icons.calendar_today, size: 12, color: Colors.grey[500]),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    m.maintenanceDate,
-                                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.calendar_today, size: 12, color: Colors.grey[500]),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        m.maintenanceDate,
+                                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 10),
-                                  Icon(Icons.speed, size: 12, color: Colors.grey[500]),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '${_fmt(m.mileageAtMaintenance)} km',
-                                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.speed, size: 12, color: Colors.grey[500]),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '${_fmt(m.mileageAtMaintenance)} km',
+                                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),

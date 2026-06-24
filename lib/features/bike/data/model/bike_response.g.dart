@@ -17,6 +17,8 @@ BikeResponse _$BikeResponseFromJson(Map<String, dynamic> json) => BikeResponse(
   purchasedAt: json['purchasedAt'] as String?,
   photoUrl: json['photoUrl'] as String?,
   memo: json['memo'] as String?,
+  latestFuelEfficiency: (json['latestFuelEfficiency'] as num?)?.toDouble(),
+  averageFuelEfficiency: (json['averageFuelEfficiency'] as num?)?.toDouble(),
   createdAt: json['createdAt'] as String,
 );
 
@@ -32,5 +34,7 @@ Map<String, dynamic> _$BikeResponseToJson(BikeResponse instance) =>
       'purchasedAt': instance.purchasedAt,
       'photoUrl': instance.photoUrl,
       'memo': instance.memo,
+      'latestFuelEfficiency': instance.latestFuelEfficiency,
+      'averageFuelEfficiency': instance.averageFuelEfficiency,
       'createdAt': instance.createdAt,
     };

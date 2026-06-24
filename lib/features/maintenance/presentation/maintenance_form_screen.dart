@@ -54,6 +54,7 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
       text: m?.maintenanceDate ?? DateTime.now().toString().substring(0, 10),
     );
     _mileageController = TextEditingController(text: m?.mileageAtMaintenance.toString() ?? '');
+    _mileageController.addListener(_onMileageChanged);
     _costController = TextEditingController(text: m?.cost?.toString() ?? '');
     _descriptionController = TextEditingController(text: m?.description ?? '');
     _nextDueKmController = TextEditingController(text: m?.nextDueKm?.toString() ?? '');
@@ -61,6 +62,7 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
 
   @override
   void dispose() {
+    _mileageController.removeListener(_onMileageChanged);
     _dateController.dispose();
     _mileageController.dispose();
     _costController.dispose();
@@ -100,7 +102,7 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
                     loading: () => const LinearProgressIndicator(),
                     error: (e, _) => Text('바이크 목록 로드 실패: $e'),
                     data: (bikes) => DropdownButtonFormField<String>(
-                      value: _selectedBikeId,
+                      initialValue: _selectedBikeId,
                       decoration: const InputDecoration(
                         labelText: '바이크',
                         border: OutlineInputBorder(),
@@ -130,7 +132,7 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<MaintenanceType>(
-                    value: _selectedType,
+                    initialValue: _selectedType,
                     decoration: const InputDecoration(
                       labelText: '정비 종류',
                       border: OutlineInputBorder(),
@@ -200,17 +202,18 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
                     maxLines: 3,
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _nextDueKmController,
-                    decoration: InputDecoration(
-                      labelText: '다음 정비 예정 주행거리 (km, 선택)',
-                      border: const OutlineInputBorder(),
-                      helperText: _scheduleIntervalKm != null
-                          ? '정비 주기: ${_scheduleIntervalKm}km마다'
-                          : null,
+                  if (_scheduleIntervalKm != null)
+                    _buildNextDueKmReadOnly()
+                  else
+                    TextFormField(
+                      controller: _nextDueKmController,
+                      decoration: const InputDecoration(
+                        labelText: '다음 정비 예정 주행거리 (km, 선택)',
+                        border: OutlineInputBorder(),
+                        helperText: '입력하면 정비 주기가 자동 등록됩니다',
+                      ),
+                      keyboardType: TextInputType.number,
                     ),
-                    keyboardType: TextInputType.number,
-                  ),
                   if (_autoFilledInfo != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
@@ -252,9 +255,12 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
     setState(() => _isLoading = true);
     try {
       final costText = _costController.text.trim();
-      final nextKmText = _nextDueKmController.text.trim();
       final mileage = int.parse(_mileageController.text);
-      final nextDueKm = nextKmText.isNotEmpty ? int.tryParse(nextKmText) : null;
+      final nextDueKm = _scheduleIntervalKm != null
+          ? _calculatedNextDueKm
+          : (_nextDueKmController.text.trim().isNotEmpty
+              ? int.tryParse(_nextDueKmController.text.trim())
+              : null);
       final bikeId = _isEdit ? widget.bikeId : _selectedBikeId;
 
       if (_isEdit) {
@@ -369,6 +375,47 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
       }
     });
   }
+
+  void _onMileageChanged() {
+    if (_scheduleIntervalKm != null) {
+      final mileage = int.tryParse(_mileageController.text);
+      if (mileage != null) {
+        _nextDueKmController.text = (mileage + _scheduleIntervalKm!).toString();
+      } else {
+        _nextDueKmController.clear();
+      }
+      setState(() {});
+    }
+  }
+
+  int? get _calculatedNextDueKm {
+    final mileage = int.tryParse(_mileageController.text);
+    if (mileage != null && _scheduleIntervalKm != null) {
+      return mileage + _scheduleIntervalKm!;
+    }
+    return null;
+  }
+
+  Widget _buildNextDueKmReadOnly() {
+    final nextDue = _calculatedNextDueKm;
+    return InputDecorator(
+      decoration: InputDecoration(
+        labelText: '다음 정비 예정 주행거리',
+        border: const OutlineInputBorder(),
+        helperText: '정비 주기: ${_fmt(_scheduleIntervalKm!)}km마다',
+        filled: true,
+        fillColor: Colors.grey.shade100,
+      ),
+      child: Text(
+        nextDue != null ? '${_fmt(nextDue)} km' : '-',
+        style: const TextStyle(fontSize: 16),
+      ),
+    );
+  }
+
+  String _fmt(num n) => n
+      .toString()
+      .replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
 
   Future<String?> _syncScheduleAfterSave({
     required String bikeId,

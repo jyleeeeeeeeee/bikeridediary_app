@@ -18,6 +18,7 @@ class MainShell extends ConsumerWidget {
         child: navigationShell,
       ),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: navigationShell.currentIndex,
         onTap: (index) => navigationShell.goBranch(
           index,
@@ -27,6 +28,10 @@ class MainShell extends ConsumerWidget {
           BottomNavigationBarItem(
             icon: Icon(Icons.home_rounded),
             label: '홈',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.build_rounded),
+            label: '정비',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.two_wheeler),
