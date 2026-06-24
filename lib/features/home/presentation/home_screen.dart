@@ -565,9 +565,8 @@ class _QuickActionsGrid extends StatelessWidget {
             _QuickActionCard(
               icon: Icons.ev_station_rounded,
               label: '주유소 검색',
-              iconColor: Colors.grey,
-              comingSoon: true,
-              onTap: null,
+              iconColor: const Color(0xFF03C75A),
+              onTap: () => context.push('/stations'),
             ),
           ],
         ),

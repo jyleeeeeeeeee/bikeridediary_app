@@ -7,6 +7,20 @@ environment:
   sdk: ^3.12.1
 
 dependencies:
+  fluttertoast: ^8.2.8
+
+  # 지도 — 라이딩 코스 경로 표시
+  google_maps_flutter: ^2.10.0
+
+  # GPS 위치 수집
+  geolocator: ^14.0.2
+
+  # 백그라운드 GPS 기록
+  flutter_foreground_task: ^8.13.4
+
+  # 외부 앱 실행 (지도 앱 공유 딥링크)
+  url_launcher: ^6.3.1
+
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
