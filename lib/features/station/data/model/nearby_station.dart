@@ -4,9 +4,8 @@ class NearbyStation {
   final String brand;
   final double lat;
   final double lng;
-  final int distanceMeters;
-  final int price;
-  final String fuelType;
+  final double distanceMeters;
+  final double price;
 
   const NearbyStation({
     required this.stationId,
@@ -16,19 +15,17 @@ class NearbyStation {
     required this.lng,
     required this.distanceMeters,
     required this.price,
-    required this.fuelType,
   });
 
   factory NearbyStation.fromJson(Map<String, dynamic> json) {
     return NearbyStation(
-      stationId: json['stationId'] as String,
-      name: json['name'] as String,
-      brand: json['brand'] as String,
-      lat: (json['lat'] as num).toDouble(),
-      lng: (json['lng'] as num).toDouble(),
-      distanceMeters: json['distanceMeters'] as int,
-      price: json['price'] as int,
-      fuelType: json['fuelType'] as String,
+      stationId: json['UNI_ID'] as String,
+      name: json['OS_NM'] as String,
+      brand: json['POLL_DIV_CD'] as String,
+      lat: (json['GIS_X_COOR'] as num).toDouble(),
+      lng: (json['GIS_Y_COOR'] as num).toDouble(),
+      distanceMeters: (json['DISTANCE'] as num).toDouble(),
+      price: (json['PRICE'] as num).toDouble(),
     );
   }
 
@@ -57,13 +54,13 @@ class NearbyStation {
 
   String get distanceDisplay {
     if (distanceMeters < 1000) {
-      return '${distanceMeters}m';
+      return '${distanceMeters.toStringAsFixed(0)}m';
     }
     return '${(distanceMeters / 1000).toStringAsFixed(1)}km';
   }
 
   String get priceDisplay {
-    return price.toString().replaceAllMapped(
+    return price.toStringAsFixed(0).replaceAllMapped(
       RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
       (m) => '${m[1]},',
     );

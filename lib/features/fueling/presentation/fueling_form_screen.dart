@@ -239,7 +239,7 @@ class _FuelingFormScreenState extends ConsumerState<FuelingFormScreen> {
                           final result = await context.push<Map<String, dynamic>>('/stations/pick');
                           if (result != null && mounted) {
                             _stationCtl.text = result['name'] as String;
-                            final price = result['price'] as int?;
+                            final price = result['price'] as num?;
                             if (price != null && _priceCtl.text.isEmpty) {
                               _priceCtl.text = price.toString();
                             }

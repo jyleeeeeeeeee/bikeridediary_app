@@ -26,6 +26,7 @@ class _StationSearchScreenState extends ConsumerState<StationSearchScreen> {
     final stationsAsync = ref.watch(nearbyStationsProvider);
     final fuelType = ref.watch(stationFuelTypeProvider);
     final radius = ref.watch(stationRadiusProvider);
+    final sort = ref.watch(stationSortProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('주유소 검색')),
@@ -34,12 +35,17 @@ class _StationSearchScreenState extends ConsumerState<StationSearchScreen> {
           _FilterBar(
             fuelType: fuelType,
             radius: radius,
+            sort: sort,
             onFuelTypeChanged: (v) {
               ref.read(stationFuelTypeProvider.notifier).state = v;
               ref.read(nearbyStationsProvider.notifier).search();
             },
             onRadiusChanged: (v) {
               ref.read(stationRadiusProvider.notifier).state = v;
+              ref.read(nearbyStationsProvider.notifier).search();
+            },
+            onSortChanged: (v) {
+              ref.read(stationSortProvider.notifier).state = v;
               ref.read(nearbyStationsProvider.notifier).search();
             },
           ),
@@ -63,7 +69,10 @@ class _StationSearchScreenState extends ConsumerState<StationSearchScreen> {
                   onRefresh: () =>
                       ref.read(nearbyStationsProvider.notifier).search(),
                   child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    padding: EdgeInsets.fromLTRB(
+                      16, 8, 16,
+                      16 + MediaQuery.of(context).padding.bottom,
+                    ),
                     itemCount: stations.length,
                     itemBuilder: (context, index) => _StationCard(
                       station: stations[index],
@@ -84,13 +93,11 @@ class _StationSearchScreenState extends ConsumerState<StationSearchScreen> {
   String _fuelTypeLabel(String code) {
     switch (code) {
       case 'B027':
-        return '일반유';
+        return '휘발유';
       case 'B034':
-        return '고급유';
-      case 'D047':
-        return '경유';
+        return '고급휘발유';
       default:
-        return '일반유';
+        return '휘발유';
     }
   }
 
@@ -108,20 +115,24 @@ class _StationSearchScreenState extends ConsumerState<StationSearchScreen> {
 class _FilterBar extends StatelessWidget {
   final String fuelType;
   final int radius;
+  final int sort;
   final ValueChanged<String> onFuelTypeChanged;
   final ValueChanged<int> onRadiusChanged;
+  final ValueChanged<int> onSortChanged;
 
   const _FilterBar({
     required this.fuelType,
     required this.radius,
+    required this.sort,
     required this.onFuelTypeChanged,
     required this.onRadiusChanged,
+    required this.onSortChanged,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -134,90 +145,70 @@ class _FilterBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(
-            child: _FilterChipGroup(
-              selected: fuelType,
-              options: const {
-                'B027': '일반유',
-                'B034': '고급유',
-                'D047': '경유',
-              },
-              onChanged: onFuelTypeChanged,
-            ),
+          _FilterDropdown<String>(
+            value: fuelType,
+            items: const [
+              DropdownMenuItem(value: 'B027', child: Text('휘발유')),
+              DropdownMenuItem(value: 'B034', child: Text('고급휘발유')),
+            ],
+            onChanged: onFuelTypeChanged,
           ),
-          const SizedBox(width: 12),
-          _RadiusDropdown(
+          const SizedBox(width: 8),
+          _FilterDropdown<int>(
+            value: sort,
+            items: const [
+              DropdownMenuItem(value: 1, child: Text('가격순')),
+              DropdownMenuItem(value: 2, child: Text('거리순')),
+            ],
+            onChanged: onSortChanged,
+          ),
+          const Spacer(),
+          Text('반경', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+          const SizedBox(width: 4),
+          _FilterDropdown<int>(
             value: radius,
+            items: const [
+              DropdownMenuItem(value: 1000, child: Text('1km')),
+              DropdownMenuItem(value: 3000, child: Text('3km')),
+              DropdownMenuItem(value: 5000, child: Text('5km')),
+            ],
             onChanged: onRadiusChanged,
           ),
+          const SizedBox(width: 4),
+          Text('이내', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
         ],
       ),
     );
   }
 }
 
-class _FilterChipGroup extends StatelessWidget {
-  final String selected;
-  final Map<String, String> options;
-  final ValueChanged<String> onChanged;
+class _FilterDropdown<T> extends StatelessWidget {
+  final T value;
+  final List<DropdownMenuItem<T>> items;
+  final ValueChanged<T> onChanged;
 
-  const _FilterChipGroup({
-    required this.selected,
-    required this.options,
+  const _FilterDropdown({
+    required this.value,
+    required this.items,
     required this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: options.entries.map((e) {
-        final isSelected = e.key == selected;
-        return Padding(
-          padding: const EdgeInsets.only(right: 6),
-          child: ChoiceChip(
-            label: Text(e.value),
-            selected: isSelected,
-            onSelected: (_) => onChanged(e.key),
-            selectedColor: const Color(0xFFFF6B35),
-            labelStyle: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: isSelected ? Colors.white : const Color(0xFF1B2838),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            visualDensity: VisualDensity.compact,
-          ),
-        );
-      }).toList(),
-    );
-  }
-}
-
-class _RadiusDropdown extends StatelessWidget {
-  final int value;
-  final ValueChanged<int> onChanged;
-
-  const _RadiusDropdown({required this.value, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
     return Container(
+      height: 32,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.shade300),
         borderRadius: BorderRadius.circular(8),
       ),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<int>(
+        child: DropdownButton<T>(
           value: value,
           isDense: true,
+          icon: const Icon(Icons.arrow_drop_down, size: 18),
           style: const TextStyle(fontSize: 12, color: Color(0xFF1B2838)),
-          items: const [
-            DropdownMenuItem(value: 1000, child: Text('1km')),
-            DropdownMenuItem(value: 3000, child: Text('3km')),
-            DropdownMenuItem(value: 5000, child: Text('5km')),
-            DropdownMenuItem(value: 10000, child: Text('10km')),
-          ],
+          items: items,
           onChanged: (v) {
             if (v != null) onChanged(v);
           },

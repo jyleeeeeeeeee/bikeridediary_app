@@ -8,7 +8,9 @@ import '../../bike/data/model/bike_category.dart';
 import '../../bike/data/model/bike_response.dart';
 import '../../bike/domain/bike_provider.dart';
 import '../../maintenance/domain/maintenance_provider.dart';
+import '../../station/data/model/avg_oil.dart';
 import '../../fueling/domain/fueling_provider.dart';
+import '../../station/domain/station_provider.dart';
 
 // Formats a number with comma separators (e.g. 12345 → "12,345")
 String _formatNumber(num n) => n
@@ -43,6 +45,7 @@ class HomeScreen extends ConsumerWidget {
             onRefresh: () {
               ref.invalidate(scheduleListProvider(repBike.id));
               ref.invalidate(fuelingStatsProvider(repBike.id));
+              ref.invalidate(avgOilPriceProvider);
               return ref.refresh(bikeListProvider.future);
             },
             child: CustomScrollView(
@@ -144,7 +147,7 @@ class _EmptyBikeView extends StatelessWidget {
 
 // ── Gradient header ──────────────────────────────────────────────────────────
 
-class _HomeHeader extends StatelessWidget {
+class _HomeHeader extends ConsumerWidget {
   final BikeResponse bike;
   final String? nickname;
   final VoidCallback onLogout;
@@ -152,8 +155,9 @@ class _HomeHeader extends StatelessWidget {
   const _HomeHeader({required this.bike, this.nickname, required this.onLogout});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final categoryName = BikeTypeDisplay.displayName(bike.category);
+    final avgOilAsync = ref.watch(avgOilPriceProvider);
 
     return Container(
       decoration: const BoxDecoration(gradient: AppTheme.headerGradient),
@@ -164,7 +168,7 @@ class _HomeHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top row: greeting + logout button
+              // Top row: greeting + avg price
               Row(
                 children: [
                   Expanded(
@@ -202,12 +206,26 @@ class _HomeHeader extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // IconButton(
-                  //   icon: const Icon(Icons.logout_rounded, color: Colors.white70),
-                  //   tooltip: '로그아웃',
-                  //   onPressed: onLogout,
-                  // ),
-                  
+                  avgOilAsync.when(
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, _) => const SizedBox.shrink(),
+                    data: (oils) {
+                      if (oils.isEmpty) return const SizedBox.shrink();
+                      final targets = oils.where(
+                        (o) => o.prodcd == 'B027' || o.prodcd == 'B034',
+                      ).toList();
+                      if (targets.isEmpty) return const SizedBox.shrink();
+                      return Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          for (int i = 0; i < targets.length; i++) ...[
+                            if (i > 0) const SizedBox(width: 6),
+                            _OilPriceChip(oil: targets[i]),
+                          ],
+                        ],
+                      );
+                    },
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
@@ -572,6 +590,76 @@ class _QuickActionsGrid extends StatelessWidget {
         ),
         const SizedBox(height: 16),
       ],
+    );
+  }
+}
+
+class _OilPriceChip extends StatelessWidget {
+  final AvgOil oil;
+  const _OilPriceChip({required this.oil});
+
+  @override
+  Widget build(BuildContext context) {
+    final diffColor = oil.diff > 0
+        ? const Color(0xFFFF6B6B)
+        : oil.diff < 0
+            ? const Color(0xFF51CF66)
+            : Colors.white54;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                oil.prodnm,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 10,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                '${oil.priceDisplay}원',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                oil.diff > 0
+                    ? Icons.arrow_drop_up_rounded
+                    : oil.diff < 0
+                        ? Icons.arrow_drop_down_rounded
+                        : Icons.remove_rounded,
+                color: diffColor,
+                size: 16,
+              ),
+              Text(
+                '${oil.diff > 0 ? '+' : ''}${oil.diff.toStringAsFixed(1)}원',
+                style: TextStyle(
+                  color: diffColor,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

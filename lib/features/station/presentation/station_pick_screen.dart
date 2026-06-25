@@ -32,11 +32,17 @@ class _StationPickScreenState extends ConsumerState<StationPickScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: [
-                _chip('일반유', 'B027', fuelType),
-                const SizedBox(width: 6),
-                _chip('고급유', 'B034', fuelType),
-                const SizedBox(width: 6),
-                _chip('경유', 'D047', fuelType),
+                _dropdown<String>(
+                  value: fuelType,
+                  items: const [
+                    DropdownMenuItem(value: 'B027', child: Text('휘발유')),
+                    DropdownMenuItem(value: 'B034', child: Text('고급휘발유')),
+                  ],
+                  onChanged: (v) {
+                    ref.read(stationFuelTypeProvider.notifier).state = v;
+                    ref.read(nearbyStationsProvider.notifier).search();
+                  },
+                ),
               ],
             ),
           ),
@@ -96,22 +102,28 @@ class _StationPickScreenState extends ConsumerState<StationPickScreen> {
     );
   }
 
-  Widget _chip(String label, String code, String selected) {
-    final isSelected = code == selected;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) {
-        ref.read(stationFuelTypeProvider.notifier).state = code;
-        ref.read(nearbyStationsProvider.notifier).search();
-      },
-      selectedColor: const Color(0xFFFF6B35),
-      labelStyle: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: isSelected ? Colors.white : const Color(0xFF1B2838),
+  Widget _dropdown<T>({
+    required T value,
+    required List<DropdownMenuItem<T>> items,
+    required ValueChanged<T> onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
       ),
-      visualDensity: VisualDensity.compact,
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<T>(
+          value: value,
+          isDense: true,
+          style: const TextStyle(fontSize: 12, color: Color(0xFF1B2838)),
+          items: items,
+          onChanged: (v) {
+            if (v != null) onChanged(v);
+          },
+        ),
+      ),
     );
   }
 }

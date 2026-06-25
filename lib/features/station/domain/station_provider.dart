@@ -1,11 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import '../data/model/avg_oil.dart';
 import '../data/model/nearby_station.dart';
 import '../data/repository/station_repository.dart';
+
+final avgOilPriceProvider = FutureProvider<List<AvgOil>>((ref) {
+  return ref.watch(stationRepositoryProvider).getAvgPrice();
+});
 
 final stationFuelTypeProvider = StateProvider<String>((ref) => 'B027');
 
 final stationRadiusProvider = StateProvider<int>((ref) => 5000);
+
+final stationSortProvider = StateProvider<int>((ref) => 1);
 
 final nearbyStationsProvider =
     AsyncNotifierProvider<NearbyStationsNotifier, List<NearbyStation>>(
@@ -33,12 +40,14 @@ class NearbyStationsNotifier extends AsyncNotifier<List<NearbyStation>> {
 
       final fuelType = ref.read(stationFuelTypeProvider);
       final radius = ref.read(stationRadiusProvider);
+      final sort = ref.read(stationSortProvider);
 
       return ref.read(stationRepositoryProvider).searchNearby(
             lat: position.latitude,
             lng: position.longitude,
             radius: radius,
             prodcd: fuelType,
+            sort: sort,
           );
     });
   }
