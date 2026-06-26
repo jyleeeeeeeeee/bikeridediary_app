@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../bike/domain/bike_provider.dart';
 import '../data/model/maintenance_create_request.dart';
@@ -25,16 +27,25 @@ class MaintenanceListNotifier extends FamilyAsyncNotifier<List<MaintenanceRespon
     return ref.watch(maintenanceRepositoryProvider).getMaintenances(arg);
   }
 
-  Future<void> createMaintenance(MaintenanceCreateRequest request) async {
-    await ref.read(maintenanceRepositoryProvider).createMaintenance(request);
+  Future<void> createMaintenance(MaintenanceCreateRequest request, {List<File>? images}) async {
+    await ref.read(maintenanceRepositoryProvider).createMaintenance(request, images: images);
     ref.invalidateSelf();
     ref.invalidate(bikeListProvider);
     ref.invalidate(bikeDetailProvider(arg));
     ref.invalidate(scheduleListProvider(arg));
   }
 
-  Future<void> updateMaintenance(String id, MaintenanceUpdateRequest request) async {
-    await ref.read(maintenanceRepositoryProvider).updateMaintenance(id, request);
+  Future<void> updateMaintenance(
+    String id,
+    MaintenanceUpdateRequest request, {
+    List<File>? newImages,
+    List<String>? existingImageUrls,
+  }) async {
+    await ref.read(maintenanceRepositoryProvider).updateMaintenance(
+      id, request,
+      newImages: newImages,
+      existingImageUrls: existingImageUrls,
+    );
     ref.invalidateSelf();
     ref.invalidate(maintenanceDetailProvider(id));
     ref.invalidate(bikeListProvider);

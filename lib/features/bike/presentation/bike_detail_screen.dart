@@ -52,7 +52,15 @@ class _BikeDetailBody extends ConsumerWidget {
       data: (stats) => stats.averageFuelEfficiency,
     );
 
-    return CustomScrollView(
+    return RefreshIndicator(
+      onRefresh: () {
+        ref.invalidate(bikeDetailProvider(bikeId));
+        ref.invalidate(scheduleListProvider(bikeId));
+        ref.invalidate(fuelingStatsProvider(bikeId));
+        return ref.read(bikeDetailProvider(bikeId).future);
+      },
+      child: CustomScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
         SliverAppBar(
           expandedHeight: 200,
@@ -151,7 +159,7 @@ class _BikeDetailBody extends ConsumerWidget {
                                     if (bike.isRepresentative) ...[
                                       const SizedBox(width: 8),
                                       const Icon(Icons.star_rounded,
-                                          size: 18, color: Color(0xFFFF6B35)),
+                                          size: 18, color: Color(0xFF007AFF)),
                                     ],
                                   ],
                                 ),
@@ -189,7 +197,7 @@ class _BikeDetailBody extends ConsumerWidget {
                       label: '총 주행거리',
                       value: _fmt(bike.totalMileageKm),
                       unit: 'km',
-                      iconColor: const Color(0xFF1B2838),
+                      iconColor: const Color(0xFF1C1C1E),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -201,7 +209,7 @@ class _BikeDetailBody extends ConsumerWidget {
                           ? avgEfficiency.toStringAsFixed(1)
                           : '--',
                       unit: 'km/L',
-                      iconColor: const Color(0xFFFF6B35),
+                      iconColor: const Color(0xFF007AFF),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -213,7 +221,7 @@ class _BikeDetailBody extends ConsumerWidget {
                       unit: '건',
                       iconColor: overdueCount > 0
                           ? Colors.redAccent
-                          : const Color(0xFF1B2838),
+                          : const Color(0xFF1C1C1E),
                       valueColor: overdueCount > 0 ? Colors.redAccent : null,
                     ),
                   ),
@@ -233,7 +241,7 @@ class _BikeDetailBody extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF1B2838),
+                          color: Color(0xFF1C1C1E),
                         ),
                       ),
                       const SizedBox(height: 14),
@@ -258,20 +266,20 @@ class _BikeDetailBody extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF1B2838),
+                  color: Color(0xFF1C1C1E),
                 ),
               ),
               const SizedBox(height: 10),
               _ActionTile(
                 icon: Icons.build_rounded,
-                iconColor: const Color(0xFF1B2838),
+                iconColor: const Color(0xFF1C1C1E),
                 label: '정비 기록',
                 subtitle: '교체 이력 및 정비 스케줄 관리',
                 onTap: () => context.push('/bikes/$bikeId/maintenances'),
               ),
               _ActionTile(
                 icon: Icons.local_gas_station_rounded,
-                iconColor: const Color(0xFFFF6B35),
+                iconColor: const Color(0xFF007AFF),
                 label: '주유 기록',
                 subtitle: '주유 이력 및 연비 통계',
                 onTap: () => context.go('/fuel'),
@@ -281,6 +289,7 @@ class _BikeDetailBody extends ConsumerWidget {
           ),
         ),
       ],
+      ),
     );
   }
 }
@@ -378,7 +387,7 @@ class _InfoRow extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF1B2838),
+                color: Color(0xFF1C1C1E),
               ),
             ),
           ),
@@ -433,7 +442,7 @@ class _ActionTile extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF1B2838),
+                        color: Color(0xFF1C1C1E),
                       ),
                     ),
                     const SizedBox(height: 2),

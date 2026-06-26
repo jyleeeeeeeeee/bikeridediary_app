@@ -245,7 +245,7 @@ class _StatItem extends StatelessWidget {
               icon,
               size: iconSize ?? 14,
               color: highlight
-                  ? const Color(0xFFFF6B35)
+                  ? const Color(0xFF007AFF)
                   : iconColor ?? Colors.white54,
             ),
             const SizedBox(width: 4),
@@ -289,7 +289,7 @@ class _BikeSelectorBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
-          const Icon(Icons.two_wheeler, size: 18, color: Color(0xFF1B2838)),
+          const Icon(Icons.two_wheeler, size: 18, color: Color(0xFF1C1C1E)),
           const SizedBox(width: 8),
           Expanded(
             child: DropdownButtonHideUnderline(
@@ -298,7 +298,7 @@ class _BikeSelectorBar extends StatelessWidget {
                 isExpanded: true,
                 isDense: true,
                 style: const TextStyle(
-                  color: Color(0xFF1B2838),
+                  color: Color(0xFF1C1C1E),
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
@@ -352,8 +352,13 @@ class _FuelingList extends ConsumerWidget {
           return _EmptyRecordsState();
         }
         return RefreshIndicator(
-          onRefresh: () => ref.refresh(fuelingListProvider(bikeId).future),
+          onRefresh: () {
+            ref.invalidate(fuelingListProvider(bikeId));
+            ref.invalidate(fuelingStatsProvider(bikeId));
+            return ref.read(fuelingListProvider(bikeId).future);
+          },
           child: ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
             itemCount: records.length,
             itemBuilder: (context, index) {
@@ -474,13 +479,13 @@ class _FuelingCard extends StatelessWidget {
                       vertical: 3,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1B2838).withAlpha(13),
+                      color: const Color(0xFF1C1C1E).withAlpha(13),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       _fuelType.displayName,
                       style: const TextStyle(
-                        color: Color(0xFF1B2838),
+                        color: Color(0xFF1C1C1E),
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                       ),
@@ -496,7 +501,7 @@ class _FuelingCard extends StatelessWidget {
                     Icon(
                       Icons.location_on,
                       size: iconSize,
-                      color: const Color(0xFFFF6B35),
+                      color: const Color(0xFF007AFF),
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -629,13 +634,13 @@ class _EmptyRecordsState extends StatelessWidget {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: const Color(0xFFFF6B35).withAlpha(25),
+              color: const Color(0xFF007AFF).withAlpha(25),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.local_gas_station,
               size: 40,
-              color: Color(0xFFFF6B35),
+              color: Color(0xFF007AFF),
             ),
           ),
           const SizedBox(height: 20),
@@ -644,7 +649,7 @@ class _EmptyRecordsState extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF1B2838),
+              color: Color(0xFF1C1C1E),
             ),
           ),
           const SizedBox(height: 8),

@@ -22,7 +22,7 @@ class SettingsScreen extends ConsumerWidget {
                 children: [
                   CircleAvatar(
                     radius: 28,
-                    backgroundColor: const Color(0xFF1B2838),
+                    backgroundColor: const Color(0xFF007AFF),
                     child: Text(
                       authState.user?.nickname!.isNotEmpty == true
                           ? authState.user!.nickname![0]

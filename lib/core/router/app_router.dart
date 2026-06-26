@@ -23,13 +23,6 @@ import '../../features/fueling/presentation/fueling_list_screen.dart';
 import '../../features/fueling/presentation/fueling_form_screen.dart';
 import '../../features/fueling/data/model/fueling_response.dart';
 import '../../features/settings/presentation/settings_screen.dart';
-import '../../features/riding/presentation/course_list_screen.dart';
-import '../../features/riding/presentation/course_detail_screen.dart';
-import '../../features/riding/presentation/riding_record_screen.dart';
-import '../../features/riding/presentation/riding_save_screen.dart';
-import '../../features/riding/domain/riding_provider.dart';
-import '../../features/station/presentation/station_search_screen.dart';
-import '../../features/station/presentation/station_pick_screen.dart';
 
 Page<void> _smoothPage(GoRouterState state, Widget child) {
   return CustomTransitionPage<void>(
@@ -99,44 +92,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // Auth routes — outside the shell (no bottom nav)
       GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
       GoRoute(path: '/signup', builder: (_, _) => const SignupScreen()),
-
-      // Station search — outside the shell (full screen, no bottom nav)
-      GoRoute(
-        path: '/stations',
-        pageBuilder: (_, state) =>
-            _smoothPage(state, const StationSearchScreen()),
-      ),
-      GoRoute(
-        path: '/stations/pick',
-        pageBuilder: (_, state) =>
-            _smoothPage(state, const StationPickScreen()),
-      ),
-
-      // Riding routes — outside the shell (full screen, no bottom nav)
-      GoRoute(
-        path: '/riding/record',
-        pageBuilder: (_, state) =>
-            _smoothPage(state, const RidingRecordScreen()),
-      ),
-      GoRoute(
-        path: '/riding/save',
-        pageBuilder: (_, state) => _smoothPage(
-          state,
-          RidingSaveScreen(ridingResult: state.extra as RidingState),
-        ),
-      ),
-      GoRoute(
-        path: '/riding',
-        pageBuilder: (_, state) =>
-            _smoothPage(state, const CourseListScreen()),
-      ),
-      GoRoute(
-        path: '/riding/:courseId',
-        pageBuilder: (_, state) => _smoothPage(
-          state,
-          CourseDetailScreen(courseId: state.pathParameters['courseId']!),
-        ),
-      ),
 
       // Shell routes — wrapped with BottomNavigationBar
       StatefulShellRoute.indexedStack(

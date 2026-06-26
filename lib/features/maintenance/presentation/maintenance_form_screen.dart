@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../core/widgets/authenticated_image.dart';
 import '../../bike/data/model/bike_response.dart';
 import '../../bike/domain/bike_provider.dart';
 import '../data/model/maintenance_create_request.dart';
@@ -36,6 +40,9 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
   bool _didInitialAutoFill = false;
   String? _autoFilledInfo;
   int? _scheduleIntervalKm;
+  final List<File> _selectedImages = [];
+  final List<String> _existingImageUrls = [];
+  final _imagePicker = ImagePicker();
 
   bool get _isEdit => widget.maintenance != null;
 
@@ -58,6 +65,9 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
     _costController = TextEditingController(text: m?.cost?.toString() ?? '');
     _descriptionController = TextEditingController(text: m?.description ?? '');
     _nextDueKmController = TextEditingController(text: m?.nextDueKm?.toString() ?? '');
+    if (m?.imageUrls != null) {
+      _existingImageUrls.addAll(m!.imageUrls!);
+    }
   }
 
   @override
@@ -202,6 +212,8 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
                     maxLines: 3,
                   ),
                   const SizedBox(height: 16),
+                  _buildImageSection(),
+                  const SizedBox(height: 16),
                   if (_scheduleIntervalKm != null)
                     _buildNextDueKmReadOnly()
                   else
@@ -276,6 +288,8 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
                     : _descriptionController.text.trim(),
                 nextDueKm: nextDueKm,
               ),
+              newImages: _selectedImages.isNotEmpty ? _selectedImages : null,
+              existingImageUrls: _existingImageUrls,
             );
       } else {
         await ref.read(maintenanceListProvider(_selectedBikeId).notifier).createMaintenance(
@@ -290,6 +304,7 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
                     : _descriptionController.text.trim(),
                 nextDueKm: nextDueKm,
               ),
+              images: _selectedImages.isNotEmpty ? _selectedImages : null,
             );
       }
 
@@ -411,6 +426,176 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
         style: const TextStyle(fontSize: 16),
       ),
     );
+  }
+
+  Widget _buildImageSection() {
+    final totalCount = _existingImageUrls.length + _selectedImages.length;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Text('사진', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            const SizedBox(width: 8),
+            Text('$totalCount/5', style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+          ],
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 100,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              ..._existingImageUrls.asMap().entries.map((entry) => _buildExistingImageTile(entry.key, entry.value)),
+              ..._selectedImages.asMap().entries.map((entry) => _buildNewImageTile(entry.key, entry.value)),
+              if (totalCount < 5) _buildAddButton(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExistingImageTile(int index, String url) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: AuthenticatedImage(
+              imageUrl: url,
+              width: 100,
+              height: 100,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                width: 100, height: 100,
+                decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(8)),
+                child: const Icon(Icons.broken_image, color: Colors.grey),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 4, right: 4,
+            child: GestureDetector(
+              onTap: () => setState(() => _existingImageUrls.removeAt(index)),
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                child: const Icon(Icons.close, size: 16, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNewImageTile(int index, File file) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.file(file, width: 100, height: 100, fit: BoxFit.cover),
+          ),
+          Positioned(
+            top: 4, right: 4,
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedImages.removeAt(index)),
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                child: const Icon(Icons.close, size: 16, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddButton() {
+    return GestureDetector(
+      onTap: _showImageSourceDialog,
+      child: Container(
+        width: 100, height: 100,
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey[300]!),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add_a_photo_outlined, color: Colors.grey[500], size: 28),
+            const SizedBox(height: 4),
+            Text('사진 추가', style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('갤러리에서 선택'),
+              onTap: () {
+                ctx.pop();
+                _pickFromGallery();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined),
+              title: const Text('카메라로 촬영'),
+              onTap: () {
+                ctx.pop();
+                _pickFromCamera();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickFromGallery() async {
+    final remaining = 5 - _existingImageUrls.length - _selectedImages.length;
+    if (remaining <= 0) return;
+    final picked = await _imagePicker.pickMultiImage(
+      maxWidth: 1920,
+      maxHeight: 1920,
+      imageQuality: 85,
+    );
+    if (picked.isNotEmpty) {
+      setState(() {
+        _selectedImages.addAll(
+          picked.take(remaining).map((x) => File(x.path)),
+        );
+      });
+    }
+  }
+
+  Future<void> _pickFromCamera() async {
+    final remaining = 5 - _existingImageUrls.length - _selectedImages.length;
+    if (remaining <= 0) return;
+    final picked = await _imagePicker.pickImage(
+      source: ImageSource.camera,
+      maxWidth: 1920,
+      maxHeight: 1920,
+      imageQuality: 85,
+    );
+    if (picked != null) {
+      setState(() => _selectedImages.add(File(picked.path)));
+    }
   }
 
   String _fmt(num n) => n

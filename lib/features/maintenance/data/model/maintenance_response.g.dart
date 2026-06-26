@@ -17,6 +17,9 @@ MaintenanceResponse _$MaintenanceResponseFromJson(Map<String, dynamic> json) =>
       description: json['description'] as String?,
       nextDueKm: (json['nextDueKm'] as num?)?.toInt(),
       nextDueDate: json['nextDueDate'] as String?,
+      imageUrls: (json['imageUrls'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
       createdAt: json['createdAt'] as String,
       updatedAt: json['updatedAt'] as String?,
     );
@@ -33,6 +36,7 @@ Map<String, dynamic> _$MaintenanceResponseToJson(
   'description': instance.description,
   'nextDueKm': instance.nextDueKm,
   'nextDueDate': instance.nextDueDate,
+  'imageUrls': instance.imageUrls,
   'createdAt': instance.createdAt,
   'updatedAt': instance.updatedAt,
 };

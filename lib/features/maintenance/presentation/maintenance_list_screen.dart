@@ -56,6 +56,9 @@ class _MaintenanceListScreenState extends ConsumerState<MaintenanceListScreen>
             bottom: TabBar(
               controller: _tabController,
               indicatorWeight: 3,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white70,
+              indicatorColor: Colors.white,
               tabs: const [
                 Tab(text: '정비 기록'),
                 Tab(text: '정비 주기'),
@@ -108,10 +111,10 @@ class _MaintenanceTab extends ConsumerWidget {
                   width: 72,
                   height: 72,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1B2838).withValues(alpha: 0.08),
+                    color: const Color(0xFF1C1C1E).withValues(alpha: 0.08),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.build_rounded, size: 36, color: Color(0xFF1B2838)),
+                  child: const Icon(Icons.build_rounded, size: 36, color: Color(0xFF1C1C1E)),
                 ),
                 const SizedBox(height: 16),
                 const Text(
@@ -119,7 +122,7 @@ class _MaintenanceTab extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1B2838),
+                    color: Color(0xFF1C1C1E),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -129,8 +132,12 @@ class _MaintenanceTab extends ConsumerWidget {
           );
         }
         return RefreshIndicator(
-          onRefresh: () => ref.refresh(maintenanceListProvider(bikeId).future),
+          onRefresh: () {
+            ref.invalidate(maintenanceListProvider(bikeId));
+            return ref.read(maintenanceListProvider(bikeId).future);
+          },
           child: ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
             itemCount: maintenances.length,
             itemBuilder: (context, index) {
@@ -152,10 +159,10 @@ class _MaintenanceTab extends ConsumerWidget {
                           width: 42,
                           height: 42,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1B2838).withValues(alpha: 0.08),
+                            color: const Color(0xFF1C1C1E).withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(Icons.build_rounded, size: 20, color: Color(0xFF1B2838)),
+                          child: const Icon(Icons.build_rounded, size: 20, color: Color(0xFF1C1C1E)),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -167,7 +174,7 @@ class _MaintenanceTab extends ConsumerWidget {
                                 style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF1B2838),
+                                  color: Color(0xFF1C1C1E),
                                 ),
                               ),
                               const SizedBox(height: 3),
@@ -208,7 +215,7 @@ class _MaintenanceTab extends ConsumerWidget {
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF1B2838),
+                              color: Color(0xFF1C1C1E),
                             ),
                           ),
                         const SizedBox(width: 4),
@@ -248,10 +255,10 @@ class _ScheduleTab extends ConsumerWidget {
                   width: 72,
                   height: 72,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFF6B35).withValues(alpha: 0.08),
+                    color: const Color(0xFF007AFF).withValues(alpha: 0.08),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.schedule_rounded, size: 36, color: Color(0xFFFF6B35)),
+                  child: const Icon(Icons.schedule_rounded, size: 36, color: Color(0xFF007AFF)),
                 ),
                 const SizedBox(height: 16),
                 const Text(
@@ -259,7 +266,7 @@ class _ScheduleTab extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1B2838),
+                    color: Color(0xFF1C1C1E),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -274,7 +281,13 @@ class _ScheduleTab extends ConsumerWidget {
             ),
           );
         }
-        return ListView.builder(
+        return RefreshIndicator(
+          onRefresh: () {
+            ref.invalidate(scheduleListProvider(bikeId));
+            return ref.read(scheduleListProvider(bikeId).future);
+          },
+          child: ListView.builder(
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
           itemCount: schedules.length,
           itemBuilder: (context, index) {
@@ -303,13 +316,13 @@ class _ScheduleTab extends ConsumerWidget {
                         decoration: BoxDecoration(
                           color: s.overdue
                               ? Colors.red.shade50
-                              : const Color(0xFFFF6B35).withValues(alpha: 0.08),
+                              : const Color(0xFF007AFF).withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
                           s.overdue ? Icons.warning_amber_rounded : Icons.schedule_rounded,
                           size: 20,
-                          color: s.overdue ? Colors.redAccent : const Color(0xFFFF6B35),
+                          color: s.overdue ? Colors.redAccent : const Color(0xFF007AFF),
                         ),
                       ),
                       const SizedBox(width: 14),
@@ -322,7 +335,7 @@ class _ScheduleTab extends ConsumerWidget {
                               style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF1B2838),
+                                color: Color(0xFF1C1C1E),
                               ),
                             ),
                             const SizedBox(height: 3),
@@ -358,6 +371,7 @@ class _ScheduleTab extends ConsumerWidget {
               ),
             );
           },
+        ),
         );
       },
     );

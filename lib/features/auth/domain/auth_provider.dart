@@ -10,7 +10,6 @@ import '../../../core/storage/token_storage.dart';
 import '../../bike/domain/bike_provider.dart';
 import '../../fueling/domain/fueling_provider.dart';
 import '../../maintenance/domain/maintenance_provider.dart';
-import '../../riding/domain/course_provider.dart';
 import '../data/model/login_request.dart';
 import '../data/model/signup_request.dart';
 import '../data/repository/auth_repository.dart';
@@ -96,7 +95,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     _ref.invalidate(maintenanceListProvider);
     _ref.invalidate(maintenanceDetailProvider);
     _ref.invalidate(scheduleListProvider);
-    _ref.invalidate(courseListProvider);
   }
 
   Future<void> loginWithKakao() async {

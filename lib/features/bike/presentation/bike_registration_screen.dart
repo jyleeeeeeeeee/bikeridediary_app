@@ -82,7 +82,7 @@ class _BikeRegistrationScreenState
                 },
                 icon: Icon(
                   _currentStep > 0 ? Icons.arrow_back : Icons.close,
-                  color: const Color(0xFF1B2838),
+                  color: const Color(0xFF1C1C1E),
                 ),
               ),
             ],
@@ -195,7 +195,7 @@ class _BikeRegistrationScreenState
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1B2838),
+              color: Color(0xFF1C1C1E),
             ),
           ),
         ),
@@ -464,7 +464,7 @@ class _BikeRegistrationScreenState
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF1B2838),
+                  color: Color(0xFF1C1C1E),
                 ),
               ),
               const SizedBox(height: 4),
@@ -543,7 +543,7 @@ class _BikeRegistrationScreenState
             model.name,
             style: TextStyle(
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              color: isSelected ? const Color(0xFF1B9CFC) : const Color(0xFF1B2838),
+              color: isSelected ? const Color(0xFF1B9CFC) : const Color(0xFF1C1C1E),
             ),
           ),
           subtitle: typeLabel != null
@@ -614,7 +614,7 @@ class _BikeRegistrationScreenState
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1B2838),
+              color: Color(0xFF1C1C1E),
             ),
           ),
           const SizedBox(height: 4),
@@ -657,7 +657,7 @@ class _BikeRegistrationScreenState
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF1B2838),
+                      color: Color(0xFF1C1C1E),
                     ),
                   ),
                 ],

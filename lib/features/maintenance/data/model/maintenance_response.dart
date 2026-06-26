@@ -13,6 +13,7 @@ class MaintenanceResponse {
   final String? description;
   final int? nextDueKm;
   final String? nextDueDate;
+  final List<String>? imageUrls;
   final String createdAt;
   final String? updatedAt;
 
@@ -26,6 +27,7 @@ class MaintenanceResponse {
     this.description,
     this.nextDueKm,
     this.nextDueDate,
+    this.imageUrls,
     required this.createdAt,
     this.updatedAt,
   });

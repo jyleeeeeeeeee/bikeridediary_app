@@ -229,23 +229,9 @@ class _FuelingFormScreenState extends ConsumerState<FuelingFormScreen> {
                   // 주유소명
                   TextFormField(
                     controller: _stationCtl,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: '주유소명 (선택)',
-                      prefixIcon: const Icon(Icons.location_on_outlined),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.search),
-                        tooltip: '주유소 검색',
-                        onPressed: () async {
-                          final result = await context.push<Map<String, dynamic>>('/stations/pick');
-                          if (result != null && mounted) {
-                            _stationCtl.text = result['name'] as String;
-                            final price = result['price'] as num?;
-                            if (price != null && _priceCtl.text.isEmpty) {
-                              _priceCtl.text = price.toString();
-                            }
-                          }
-                        },
-                      ),
+                      prefixIcon: Icon(Icons.location_on_outlined),
                     ),
                   ),
                   const SizedBox(height: 16),

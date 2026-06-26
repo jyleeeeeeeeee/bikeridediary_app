@@ -19,13 +19,13 @@ class EmptyBikeView extends StatelessWidget {
               width: 96,
               height: 96,
               decoration: BoxDecoration(
-                color: const Color(0xFF1B2838).withValues(alpha: 0.08),
+                color: const Color(0xFF1C1C1E).withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.two_wheeler,
                 size: 48,
-                color: Color(0xFF1B2838),
+                color: Color(0xFF1C1C1E),
               ),
             ),
             const SizedBox(height: 24),

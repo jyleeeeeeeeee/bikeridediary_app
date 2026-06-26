@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http_parser/http_parser.dart';
 import '../../../../core/network/dio_client.dart';
 import '../model/maintenance_create_request.dart';
 import '../model/maintenance_response.dart';
@@ -29,19 +33,55 @@ class MaintenanceRepository {
     return MaintenanceResponse.fromJson(response.data['data']);
   }
 
-  Future<MaintenanceResponse> createMaintenance(MaintenanceCreateRequest request) async {
-    final response = await _dio.post('/maintenances', data: request.toJson());
+  Future<MaintenanceResponse> createMaintenance(
+    MaintenanceCreateRequest request, {
+    List<File>? images,
+  }) async {
+    final formData = await _buildFormData(request.toJson(), images ?? []);
+    final response = await _dio.post('/maintenances', data: formData);
     return MaintenanceResponse.fromJson(response.data['data']);
   }
 
-  Future<MaintenanceResponse> updateMaintenance(String id, MaintenanceUpdateRequest request) async {
-    final response = await _dio.put('/maintenances/$id', data: request.toJson());
+  Future<MaintenanceResponse> updateMaintenance(
+    String id,
+    MaintenanceUpdateRequest request, {
+    List<File>? newImages,
+    List<String>? existingImageUrls,
+  }) async {
+    final json = request.toJson();
+    if (existingImageUrls != null) {
+      json['existingImageUrls'] = existingImageUrls;
+    }
+    final formData = await _buildFormData(json, newImages ?? []);
+    final response = await _dio.put('/maintenances/$id', data: formData);
     return MaintenanceResponse.fromJson(response.data['data']);
   }
 
   Future<void> deleteMaintenance(String id) async {
     await _dio.delete('/maintenances/$id');
   }
+
+  Future<FormData> _buildFormData(Map<String, dynamic> json, List<File> images) async {
+    final formData = FormData.fromMap({
+      'data': MultipartFile.fromString(
+        _jsonEncode(json),
+        contentType: MediaType('application', 'json'),
+      ),
+    });
+    for (final file in images) {
+      final ext = file.path.split('.').last.toLowerCase();
+      formData.files.add(MapEntry(
+        'images',
+        await MultipartFile.fromFile(
+          file.path,
+          contentType: MediaType('image', ext == 'jpg' ? 'jpeg' : ext),
+        ),
+      ));
+    }
+    return formData;
+  }
+
+  String _jsonEncode(Map<String, dynamic> data) => jsonEncode(data);
 
   // 정비 스케줄
   Future<List<MaintenanceScheduleResponse>> getSchedules(String bikeId) async {

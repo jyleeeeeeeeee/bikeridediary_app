@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 
-// 바라다 앱 디자인 시스템 — 딥 블루 + 오렌지 액센트
 class AppTheme {
-  static const _primaryColor = Color(0xFF1B2838);
-  static const _accentColor = Color(0xFFFF6B35);
-  static const _surfaceColor = Color(0xFFF5F7FA);
+  static const primaryColor = Color(0xFF007AFF);
+  static const _surfaceColor = Color(0xFFF2F2F7);
   static const _cardColor = Colors.white;
+  static const textPrimary = Color(0xFF1C1C1E);
+  static const textSecondary = Color(0xFF8E8E93);
+  static const borderColor = Color(0xFFE5E5EA);
 
   static final light = ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: _accentColor,
-      primary: _primaryColor,
-      secondary: _accentColor,
+      seedColor: primaryColor,
+      primary: primaryColor,
+      secondary: primaryColor,
       surface: _surfaceColor,
       onPrimary: Colors.white,
     ),
@@ -21,23 +22,27 @@ class AppTheme {
     appBarTheme: const AppBarTheme(
       centerTitle: true,
       elevation: 0,
-      backgroundColor: _primaryColor,
-      foregroundColor: Colors.white,
+      backgroundColor: Colors.white,
+      foregroundColor: textPrimary,
+      surfaceTintColor: Colors.transparent,
       titleTextStyle: TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.w600,
-        color: Colors.white,
+        color: textPrimary,
       ),
     ),
     cardTheme: CardThemeData(
       color: _cardColor,
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFFF0F0F0), width: 0.5),
+      ),
       margin: const EdgeInsets.symmetric(vertical: 6),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: _accentColor,
+        backgroundColor: primaryColor,
         foregroundColor: Colors.white,
         minimumSize: const Size(double.infinity, 52),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -46,10 +51,10 @@ class AppTheme {
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: _primaryColor,
+        foregroundColor: primaryColor,
         minimumSize: const Size(double.infinity, 52),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        side: const BorderSide(color: Color(0xFFDDE1E6)),
+        side: const BorderSide(color: borderColor),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
@@ -58,47 +63,47 @@ class AppTheme {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFDDE1E6)),
+        borderSide: const BorderSide(color: borderColor),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFDDE1E6)),
+        borderSide: const BorderSide(color: borderColor),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: _accentColor, width: 2),
+        borderSide: const BorderSide(color: primaryColor, width: 2),
       ),
     ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: _accentColor,
+      backgroundColor: primaryColor,
       foregroundColor: Colors.white,
-      elevation: 4,
+      elevation: 2,
     ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: Colors.white,
-      selectedItemColor: _accentColor,
-      unselectedItemColor: Color(0xFF9CA3AF),
+      selectedItemColor: primaryColor,
+      unselectedItemColor: textSecondary,
       type: BottomNavigationBarType.fixed,
       elevation: 8,
       selectedLabelStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
       unselectedLabelStyle: TextStyle(fontSize: 12),
     ),
-    dividerTheme: const DividerThemeData(color: Color(0xFFE5E7EB), thickness: 1),
+    dividerTheme: const DividerThemeData(color: borderColor, thickness: 1),
     tabBarTheme: const TabBarThemeData(
-      labelColor: Colors.white,
-      unselectedLabelColor: Color(0xFF9CA3AF),
-      indicatorColor: _accentColor,
+      labelColor: primaryColor,
+      unselectedLabelColor: textSecondary,
+      indicatorColor: primaryColor,
     ),
   );
 
   static const headerGradient = LinearGradient(
-    colors: [Color(0xFF1B2838), Color(0xFF2D4059)],
+    colors: [Color(0xFF007AFF), Color(0xFF5AC8FA)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const accentGradient = LinearGradient(
-    colors: [Color(0xFFFF6B35), Color(0xFFFF8F5E)],
+    colors: [Color(0xFF007AFF), Color(0xFF34AADC)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );

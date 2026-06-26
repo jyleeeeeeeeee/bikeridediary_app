@@ -7,9 +7,9 @@ import '../../auth/domain/auth_provider.dart';
 import '../../bike/data/model/bike_category.dart';
 import '../../bike/data/model/bike_response.dart';
 import '../../bike/domain/bike_provider.dart';
+import '../../fueling/domain/fueling_provider.dart';
 import '../../maintenance/domain/maintenance_provider.dart';
 import '../../station/data/model/avg_oil.dart';
-import '../../fueling/domain/fueling_provider.dart';
 import '../../station/domain/station_provider.dart';
 
 // Formats a number with comma separators (e.g. 12345 → "12,345")
@@ -312,31 +312,27 @@ class _QuickStatsRow extends ConsumerWidget {
     final fuelingStatsAsync = ref.watch(fuelingStatsProvider(bike.id));
     final schedulesAsync = ref.watch(scheduleListProvider(bike.id));
 
-    // Overdue count derived from schedules
     final overdueCount = schedulesAsync.whenOrNull(
           data: (list) => list.where((s) => s.overdue).length,
         ) ??
         0;
 
-    // Average fuel efficiency from stats
     final avgEfficiency = fuelingStatsAsync.whenOrNull(
       data: (stats) => stats.averageFuelEfficiency,
     );
 
     return Row(
       children: [
-        // Total mileage
         Expanded(
           child: _StatCard(
             icon: Icons.speed_rounded,
             label: '총 주행거리',
             value: _formatNumber(bike.totalMileageKm),
             unit: 'km',
-            iconColor: const Color(0xFF1B2838),
+            iconColor: const Color(0xFF1C1C1E),
           ),
         ),
         const SizedBox(width: 10),
-        // Average fuel efficiency
         Expanded(
           child: _StatCard(
             icon: Icons.local_gas_station_rounded,
@@ -345,11 +341,10 @@ class _QuickStatsRow extends ConsumerWidget {
                 ? avgEfficiency.toStringAsFixed(1)
                 : '--',
             unit: 'km/L',
-            iconColor: const Color(0xFFFF6B35),
+            iconColor: const Color(0xFF007AFF),
           ),
         ),
         const SizedBox(width: 10),
-        // Overdue maintenance count
         Expanded(
           child: _StatCard(
             icon: Icons.build_rounded,
@@ -357,7 +352,7 @@ class _QuickStatsRow extends ConsumerWidget {
             value: overdueCount.toString(),
             unit: '건',
             iconColor:
-                overdueCount > 0 ? Colors.redAccent : const Color(0xFF1B2838),
+                overdueCount > 0 ? Colors.redAccent : const Color(0xFF1C1C1E),
             valueColor: overdueCount > 0 ? Colors.redAccent : null,
           ),
         ),
@@ -560,13 +555,13 @@ class _QuickActionsGrid extends StatelessWidget {
             _QuickActionCard(
               icon: Icons.build_rounded,
               label: '정비 기록',
-              iconColor: const Color(0xFF1B2838),
+              iconColor: const Color(0xFF1C1C1E),
               onTap: () => context.go('/maintenance'),
             ),
             _QuickActionCard(
               icon: Icons.local_gas_station_rounded,
               label: '주유 기록',
-              iconColor: const Color(0xFFFF6B35),
+              iconColor: const Color(0xFF007AFF),
               onTap: () {
                 context.go('/fuel');
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -577,14 +572,8 @@ class _QuickActionsGrid extends StatelessWidget {
             _QuickActionCard(
               icon: Icons.directions_bike_rounded,
               label: '바이크 상세',
-              iconColor: const Color(0xFF2D4059),
+              iconColor: const Color(0xFF5AC8FA),
               onTap: () => context.go('/bikes/${bike.id}'),
-            ),
-            _QuickActionCard(
-              icon: Icons.ev_station_rounded,
-              label: '주유소 검색',
-              iconColor: const Color(0xFF03C75A),
-              onTap: () => context.push('/stations'),
             ),
           ],
         ),

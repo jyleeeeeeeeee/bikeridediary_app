@@ -48,7 +48,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     });
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1B2838),
+      backgroundColor: const Color(0xFF1C1C1E),
       body: Stack(
         children: [
           Positioned(
@@ -208,7 +208,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           onPressed:
                               authState.status == AuthStatus.loading ? null : _signup,
                           style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFFFF6B35),
+                            backgroundColor: const Color(0xFF007AFF),
                             foregroundColor: Colors.white,
                             minimumSize: const Size(double.infinity, 52),
                             shape: RoundedRectangleBorder(
@@ -235,7 +235,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         TextButton(
                           onPressed: () => context.go('/login'),
                           style: TextButton.styleFrom(
-                            foregroundColor: const Color(0xFF1B2838),
+                            foregroundColor: const Color(0xFF1C1C1E),
                             minimumSize: const Size(double.infinity, 48),
                           ),
                           child: RichText(
@@ -249,7 +249,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                 TextSpan(
                                   text: '로그인',
                                   style: TextStyle(
-                                    color: Color(0xFFFF6B35),
+                                    color: Color(0xFF007AFF),
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -295,7 +295,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFFF6B35), width: 2),
+        borderSide: const BorderSide(color: Color(0xFF007AFF), width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),

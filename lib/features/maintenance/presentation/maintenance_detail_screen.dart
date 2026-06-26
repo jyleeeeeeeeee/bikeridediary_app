@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/authenticated_image.dart';
 import '../data/model/maintenance_type.dart';
 import '../domain/maintenance_provider.dart';
 
@@ -32,7 +33,13 @@ class MaintenanceDetailScreen extends ConsumerWidget {
             (t) => t.name == m.maintenanceType,
             orElse: () => MaintenanceType.OTHER,
           );
-          return CustomScrollView(
+          return RefreshIndicator(
+            onRefresh: () {
+              ref.invalidate(maintenanceDetailProvider(maintenanceId));
+              return ref.read(maintenanceDetailProvider(maintenanceId).future);
+            },
+            child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverAppBar(
                 expandedHeight: 160,
@@ -166,6 +173,12 @@ class MaintenanceDetailScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16),
 
+                    // 이미지
+                    if (m.imageUrls != null && m.imageUrls!.isNotEmpty) ...[
+                      _ImageGallery(imageUrls: m.imageUrls!),
+                      const SizedBox(height: 16),
+                    ],
+
                     // Detail info card
                     Card(
                       child: Padding(
@@ -178,7 +191,7 @@ class MaintenanceDetailScreen extends ConsumerWidget {
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFF1B2838),
+                                color: Color(0xFF1C1C1E),
                               ),
                             ),
                             const SizedBox(height: 14),
@@ -201,6 +214,7 @@ class MaintenanceDetailScreen extends ConsumerWidget {
                 ),
               ),
             ],
+            ),
           );
         },
       ),
@@ -226,7 +240,7 @@ class _MiniStat extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: const Color(0xFF1B2838)),
+            Icon(icon, size: 20, color: const Color(0xFF1C1C1E)),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
@@ -242,10 +256,95 @@ class _MiniStat extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF1B2838),
+                      color: Color(0xFF1C1C1E),
                     ),
                   ),
                 ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ImageGallery extends StatelessWidget {
+  final List<String> imageUrls;
+  const _ImageGallery({required this.imageUrls});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Text('사진', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF1C1C1E))),
+                const SizedBox(width: 8),
+                Text('${imageUrls.length}장', style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+              ],
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 120,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: imageUrls.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) => GestureDetector(
+                  onTap: () => _showFullImage(context, index),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: AuthenticatedImage(
+                      imageUrl: imageUrls[index],
+                      width: 120,
+                      height: 120,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        width: 120, height: 120,
+                        color: Colors.grey[200],
+                        child: const Icon(Icons.broken_image, color: Colors.grey),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showFullImage(BuildContext context, int initialIndex) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog.fullscreen(
+        child: Stack(
+          children: [
+            PageView.builder(
+              controller: PageController(initialPage: initialIndex),
+              itemCount: imageUrls.length,
+              itemBuilder: (_, i) => InteractiveViewer(
+                child: Center(
+                  child: AuthenticatedImage(
+                    imageUrl: imageUrls[i],
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: MediaQuery.of(ctx).padding.top + 8,
+              right: 8,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                style: IconButton.styleFrom(backgroundColor: Colors.black45),
+                onPressed: () => Navigator.of(ctx).pop(),
               ),
             ),
           ],
@@ -285,7 +384,7 @@ class _InfoRow extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF1B2838),
+                color: Color(0xFF1C1C1E),
               ),
             ),
           ),

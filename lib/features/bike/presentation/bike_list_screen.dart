@@ -39,8 +39,12 @@ class BikeListScreen extends ConsumerWidget {
           if (bikes.isEmpty) return const _EmptyBikeView();
 
           return RefreshIndicator(
-            onRefresh: () => ref.refresh(bikeListProvider.future),
+            onRefresh: () {
+              ref.invalidate(bikeListProvider);
+              return ref.read(bikeListProvider.future);
+            },
             child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverAppBar(
                   title: const Text('내 바이크'),
@@ -149,12 +153,12 @@ class _BikeCard extends StatelessWidget {
                   gradient: isRepresentative
                       ? AppTheme.accentGradient
                       : null,
-                  color: isRepresentative ? null : const Color(0xFF1B2838).withValues(alpha: 0.08),
+                  color: isRepresentative ? null : const Color(0xFF1C1C1E).withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
                   Icons.two_wheeler,
-                  color: isRepresentative ? Colors.white : const Color(0xFF1B2838),
+                  color: isRepresentative ? Colors.white : const Color(0xFF1C1C1E),
                   size: 26,
                 ),
               ),
@@ -178,7 +182,7 @@ class _BikeCard extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1B2838),
+                        color: Color(0xFF1C1C1E),
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -223,7 +227,7 @@ class _BikeCard extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF1B2838),
+                          color: Color(0xFF1C1C1E),
                         ),
                       ),
                       const SizedBox(width: 2),

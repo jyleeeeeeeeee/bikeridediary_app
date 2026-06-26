@@ -56,7 +56,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       //   style: TextStyle(
                       //     fontSize: 14,
                       //     fontWeight: FontWeight.w500,
-                      //     color: const Color(0xFF1B2838).withValues(alpha: 0.6),
+                      //     color: const Color(0xFF1C1C1E).withValues(alpha: 0.6),
                       //     letterSpacing: 0.3,
                       //   ),
                       // ),
@@ -72,7 +72,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       // const Icon(
                       //   Icons.two_wheeler,
                       //   size: 56,
-                      //   color: Color(0xFF1B2838),
+                      //   color: Color(0xFF1C1C1E),
                       // ),
                       // const SizedBox(height: 8),
                       // 앱 이름
@@ -81,7 +81,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         style: TextStyle(
                           fontSize: 36,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF1B2838),
+                          color: Color(0xFF1C1C1E),
                           letterSpacing: 2,
                         ),
                       ),
@@ -381,7 +381,7 @@ class _EmailLoginSheetState extends ConsumerState<_EmailLoginSheet> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF1B2838),
+                color: Color(0xFF1C1C1E),
               ),
             ),
             const SizedBox(height: 20),
@@ -451,7 +451,7 @@ class _EmailLoginSheetState extends ConsumerState<_EmailLoginSheet> {
                     TextSpan(
                       text: '회원가입',
                       style: TextStyle(
-                        color: Color(0xFFFF6B35),
+                        color: Color(0xFF007AFF),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
