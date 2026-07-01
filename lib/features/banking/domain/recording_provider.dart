@@ -46,14 +46,12 @@ class RecordingNotifier extends Notifier<RecordingState> {
     _buffer.clear();
     final startTime = DateTime.now();
     ref.read(bankingProvider.notifier).resetMaxima();
+    // 매 샘플마다 buffer에만 append. state는 갱신하지 않음 —
+    // 50Hz state 갱신은 위젯 rebuild 폭주를 유발해 layout 재진입 assertion을 터뜨린다.
+    // sampleCount는 stopAndSave 시점에 buffer.length로 확정.
     ref.read(bankingProvider.notifier).attachSampleSink((angle, t) {
       final tMs = t.difference(startTime).inMilliseconds;
       _buffer.add(AngleSample(tMs: tMs, angle: angle));
-      state = RecordingState(
-        isRecording: true,
-        startedAt: startTime,
-        sampleCount: _buffer.length,
-      );
     });
     state = RecordingState(
       isRecording: true,

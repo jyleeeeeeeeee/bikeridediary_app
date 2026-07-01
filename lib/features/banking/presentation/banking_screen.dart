@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,9 +22,9 @@ class BankingScreen extends ConsumerStatefulWidget {
 class _BankingScreenState extends ConsumerState<BankingScreen> {
   @override
   Widget build(BuildContext context) {
-    final banking = ref.watch(bankingProvider);
-    final recording = ref.watch(recordingProvider);
-
+    // 최상단은 banking/recording을 watch 하지 않는다.
+    // 50Hz로 갱신되는 bankingProvider가 상위 위젯을 rebuild하면 recording controls까지
+    // 함께 rebuild되어 layout 재진입 assertion을 유발. 각 sub-widget이 자기 필요한 것만 watch.
     return Scaffold(
       backgroundColor: BankingColors.bgDark,
       appBar: AppBar(
@@ -49,25 +51,18 @@ class _BankingScreenState extends ConsumerState<BankingScreen> {
           ),
         ],
       ),
-      body: SafeArea(
+      body: const SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
+          padding: EdgeInsets.fromLTRB(8, 12, 8, 12),
           child: Column(
             children: [
-              TachometerGauge(
-                angle: banking.angle,
-                maxLeft: banking.maxLeft,
-                maxRight: banking.maxRight,
-              ),
-              const SizedBox(height: 16),
-              _MaxAngleStats(
-                maxLeft: banking.maxLeft,
-                maxRight: banking.maxRight,
-              ),
-              const SizedBox(height: 16),
-              _RecordingControls(recording: recording),
-              const SizedBox(height: 8),
-              const _DisclaimerText(),
+              _GaugeSection(),
+              SizedBox(height: 16),
+              _MaxAngleStats(),
+              SizedBox(height: 16),
+              _RecordingControls(),
+              SizedBox(height: 8),
+              _DisclaimerText(),
             ],
           ),
         ),
@@ -76,15 +71,29 @@ class _BankingScreenState extends ConsumerState<BankingScreen> {
   }
 }
 
-class _MaxAngleStats extends StatelessWidget {
-  final double maxLeft;
-  final double maxRight;
-  const _MaxAngleStats({required this.maxLeft, required this.maxRight});
+/// 타코미터 게이지 — banking 상태만 watch. 50Hz rebuild 대상.
+class _GaugeSection extends ConsumerWidget {
+  const _GaugeSection();
 
   @override
-  Widget build(BuildContext context) {
-    final leftAbs = maxLeft.abs();
-    final rightAbs = maxRight.abs();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final banking = ref.watch(bankingProvider);
+    return TachometerGauge(
+      angle: banking.angle,
+      maxLeft: banking.maxLeft,
+      maxRight: banking.maxRight,
+    );
+  }
+}
+
+class _MaxAngleStats extends ConsumerWidget {
+  const _MaxAngleStats();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final banking = ref.watch(bankingProvider);
+    final leftAbs = banking.maxLeft.abs();
+    final rightAbs = banking.maxRight.abs();
     return Card(
       color: BankingColors.bgCard,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -147,11 +156,34 @@ class _MaxItem extends StatelessWidget {
   }
 }
 
-class _RecordingControls extends ConsumerWidget {
-  final RecordingState recording;
-  const _RecordingControls({required this.recording});
+class _RecordingControls extends ConsumerStatefulWidget {
+  const _RecordingControls();
 
-  Future<void> _handleStart(BuildContext context, WidgetRef ref) async {
+  @override
+  ConsumerState<_RecordingControls> createState() => _RecordingControlsState();
+}
+
+class _RecordingControlsState extends ConsumerState<_RecordingControls> {
+  Timer? _elapsedTicker;
+
+  @override
+  void dispose() {
+    _elapsedTicker?.cancel();
+    super.dispose();
+  }
+
+  void _ensureTickerRunning(bool isRecording) {
+    if (isRecording && _elapsedTicker == null) {
+      _elapsedTicker = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) setState(() {});
+      });
+    } else if (!isRecording && _elapsedTicker != null) {
+      _elapsedTicker?.cancel();
+      _elapsedTicker = null;
+    }
+  }
+
+  Future<void> _handleStart(BuildContext context) async {
     final pref = ref.read(introDialogPreferenceProvider);
     final dismissed = await pref.isDismissed();
     if (!context.mounted) return;
@@ -167,7 +199,9 @@ class _RecordingControls extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    final recording = ref.watch(recordingProvider);
+    _ensureTickerRunning(recording.isRecording);
     final notifier = ref.read(recordingProvider.notifier);
 
     if (recording.isRecording) {
@@ -203,6 +237,9 @@ class _RecordingControls extends ConsumerWidget {
           OutlinedButton(
             onPressed: () => notifier.cancel(),
             style: OutlinedButton.styleFrom(
+              // AppTheme.outlinedButtonTheme의 minimumSize(inf, 52) override —
+              // Row 안에서 unbounded width면 layout assertion 발생.
+              minimumSize: const Size(0, 52),
               foregroundColor: BankingColors.textPrimary,
               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
               side: const BorderSide(color: Colors.white24),
@@ -220,7 +257,7 @@ class _RecordingControls extends ConsumerWidget {
       children: [
         Expanded(
           child: ElevatedButton.icon(
-            onPressed: () => _handleStart(context, ref),
+            onPressed: () => _handleStart(context),
             style: ElevatedButton.styleFrom(
               backgroundColor: BankingColors.primary,
               foregroundColor: Colors.white,
@@ -230,7 +267,7 @@ class _RecordingControls extends ConsumerWidget {
               textStyle:
                   const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
-            icon: const Icon(CupertinoIcons.speedometer),
+            icon: const Icon(CupertinoIcons.circle_fill),
             label: const Text('기록 시작'),
           ),
         ),
@@ -256,7 +293,7 @@ class _RecordingControls extends ConsumerWidget {
               textStyle:
                   const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
-            icon: const Icon(CupertinoIcons.location_fill),
+            icon: const Icon(CupertinoIcons.refresh),
             label: const Text('각도 리셋'),
           ),
         ),
