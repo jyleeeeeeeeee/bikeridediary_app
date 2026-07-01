@@ -1,9 +1,11 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/network/connectivity_provider.dart';
 import '../domain/auth_provider.dart';
 import '../domain/auth_state.dart';
 
@@ -30,6 +32,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     });
 
+    final isOnline = ref.watch(connectivityProvider);
+
     return Scaffold(
       body: Container(
         // MYCLE 스타일 밝은 그래디언트 배경 (연한 블루 → 화이트)
@@ -43,6 +47,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: SafeArea(
           child: Column(
             children: [
+              if (!isOnline) const _OfflineBanner(),
               // ── 상단 영역: 로고 + 슬로건 (화면 중앙 상단) ──
               Expanded(
                 flex: 5,
@@ -472,5 +477,41 @@ class _EmailLoginSheetState extends ConsumerState<_EmailLoginSheet> {
             _passwordController.text,
           );
     }
+  }
+}
+
+/// 오프라인 상태를 알리는 상단 배너.
+/// 온라인 필수 로그인(이메일/소셜)은 실패 예정임을 미리 안내.
+/// "가입없이 시작하기"는 로컬 게스트로 fallback 가능하므로 함께 안내.
+class _OfflineBanner extends StatelessWidget {
+  const _OfflineBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      color: const Color(0xFFFFF3CD),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          const Icon(
+            CupertinoIcons.wifi_slash,
+            size: 18,
+            color: Color(0xFF856404),
+          ),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Text(
+              '오프라인 상태입니다. "가입없이 시작하기"로 뱅킹각 측정을 사용할 수 있습니다.',
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFF856404),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

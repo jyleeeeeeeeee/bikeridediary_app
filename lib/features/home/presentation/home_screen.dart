@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -22,6 +23,14 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final auth = ref.watch(authProvider);
+
+    // 로컬 게스트는 서버 API 호출이 불가능하므로 뱅킹 사용 안내 화면 표시.
+    // 나머지 도메인은 Phase 3에서 로컬 우선으로 이전되면 그때 사용 가능해짐.
+    if (auth.isLocalGuest) {
+      return const _LocalGuestHome();
+    }
+
     final bikesAsync = ref.watch(bikeListProvider);
 
     return Scaffold(
@@ -720,6 +729,157 @@ class _QuickActionCard extends StatelessWidget {
                       ? Colors.grey[400]
                       : Theme.of(context).textTheme.bodyLarge?.color,
                 ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 로컬 게스트 전용 홈 화면.
+/// 서버 API 호출이 불가능하므로 뱅킹각 측정만 사용 가능함을 안내하고 진입 경로 제공.
+/// 다른 도메인(바이크/정비/주유)은 Phase 3에서 로컬 우선 지원되면 여기에 추가된다.
+class _LocalGuestHome extends ConsumerWidget {
+  const _LocalGuestHome();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    '가입 없이 사용 중',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () =>
+                        ref.read(authProvider.notifier).logout(),
+                    child: const Text('나가기'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF3CD),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      CupertinoIcons.wifi_slash,
+                      color: Color(0xFF856404),
+                      size: 20,
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        '오프라인 게스트 세션이라 정비/주유 기록은 사용할 수 없습니다. '
+                        '뱅킹각 측정은 인터넷 없이도 완전히 사용 가능합니다.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF856404),
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+              _LocalGuestActionCard(
+                icon: CupertinoIcons.gauge,
+                title: '뱅킹각 측정',
+                description: '스마트폰 센서로 라이딩 뱅킹각을 실시간 측정하고 기록합니다.',
+                onTap: () => context.push('/banking'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LocalGuestActionCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String description;
+  final VoidCallback onTap;
+
+  const _LocalGuestActionCard({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: AppTheme.primaryColor, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      description,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.textSecondary,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                CupertinoIcons.chevron_right,
+                color: AppTheme.textSecondary,
+                size: 18,
               ),
             ],
           ),

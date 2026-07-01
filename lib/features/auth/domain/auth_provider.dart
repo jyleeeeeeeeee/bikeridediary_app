@@ -74,7 +74,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> logout() async {
     try {
-      await _repository.logout();
+      if (!state.isLocalGuest) {
+        await _repository.logout();
+      }
     } catch (_) {}
     await TokenStorage.clear();
     _invalidateAllData();
@@ -205,8 +207,27 @@ class AuthNotifier extends StateNotifier<AuthState> {
         refreshToken: response.refreshToken,
       );
       _invalidateAllData();
-      state = state.copyWith(status: AuthStatus.authenticated, user: response.user);
+      state = state.copyWith(
+        status: AuthStatus.authenticated,
+        user: response.user,
+        isLocalGuest: false,
+      );
     } on DioException catch (e) {
+      // 네트워크 실패 시 로컬 게스트로 fallback — 서버 통신 없이 앱 진입.
+      // 로컬 우선 도메인(뱅킹)만 정상 사용 가능. 다른 서버 도메인은 UI에서 제한.
+      final isNetworkError = e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout;
+      if (isNetworkError) {
+        _invalidateAllData();
+        state = state.copyWith(
+          status: AuthStatus.authenticated,
+          user: null,
+          isLocalGuest: true,
+        );
+        return;
+      }
       final message = _extractError(e);
       state = state.copyWith(status: AuthStatus.error, errorMessage: message);
     }
