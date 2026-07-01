@@ -22,6 +22,9 @@ import '../../features/maintenance/presentation/schedule_form_screen.dart';
 import '../../features/fueling/presentation/fueling_list_screen.dart';
 import '../../features/fueling/presentation/fueling_form_screen.dart';
 import '../../features/fueling/data/model/fueling_response.dart';
+import '../../features/banking/presentation/banking_screen.dart';
+import '../../features/banking/presentation/session_list_screen.dart' as banking;
+import '../../features/banking/presentation/session_detail_screen.dart' as banking;
 import '../../features/settings/presentation/settings_screen.dart';
 
 Page<void> _smoothPage(GoRouterState state, Widget child) {
@@ -92,6 +95,31 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // Auth routes — outside the shell (no bottom nav)
       GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
       GoRoute(path: '/signup', builder: (_, _) => const SignupScreen()),
+
+      // Banking (뱅킹각 측정) — shell 밖 전체 화면 라우트
+      GoRoute(
+        path: '/banking',
+        pageBuilder: (_, state) => _smoothPage(state, const BankingScreen()),
+        routes: [
+          GoRoute(
+            path: 'sessions',
+            pageBuilder: (_, state) =>
+                _smoothPage(state, const banking.SessionListScreen()),
+            routes: [
+              GoRoute(
+                path: ':sessionId',
+                pageBuilder: (_, state) => _smoothPage(
+                  state,
+                  banking.SessionDetailScreen(
+                    sessionId:
+                        int.parse(state.pathParameters['sessionId']!),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
 
       // Shell routes — wrapped with BottomNavigationBar
       StatefulShellRoute.indexedStack(

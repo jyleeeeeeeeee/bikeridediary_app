@@ -4,6 +4,9 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<!-- 위치: 포그라운드 전용 (라이딩 GPS 기록). WhenInUse만 사용, Always(백그라운드)는 미사용 -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>라이딩 경로를 기록하기 위해 앱 사용 중 위치 정보가 필요합니다.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

@@ -43,11 +43,37 @@ dependencies:
   # Multipart 요청용 MIME type
   http_parser: ^4.0.2
 
+  # 위치 (포그라운드 전용 — 라이딩 GPS 기록, 백그라운드 미사용)
+  geolocator: ^14.0.2
+
   # 소셜 로그인
   kakao_flutter_sdk_user: ^1.9.5
   google_sign_in: ^6.2.2
   sign_in_with_apple: ^6.1.4
   crypto: ^3.0.6
+
+  # 뱅킹각 측정 — 센서 스트림
+  sensors_plus: ^6.1.0
+
+  # 뱅킹 화면/녹화 중 자동 잠금 방지
+  wakelock_plus: ^1.2.10
+
+  # 뱅킹 세션 로컬 저장
+  sqflite: ^2.4.1
+  path: ^1.9.0
+  path_provider: ^2.1.5
+
+  # 시간 포맷
+  intl: ^0.20.1
+
+  # 세션 상세 각도 그래프
+  fl_chart: ^0.69.0
+
+  # 네트워크 연결 상태 감지 (오프라인 감지 + sync 트리거)
+  connectivity_plus: ^6.0.5
+
+  # 클라이언트 UUID 생성 (오프라인 create 즉시 ID 확정)
+  uuid: ^4.5.1
 
 dev_dependencies:
   flutter_test:

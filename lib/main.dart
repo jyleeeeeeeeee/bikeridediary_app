@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'core/router/app_router.dart';
+import 'core/sync/sync_engine.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/domain/auth_provider.dart';
 import 'features/auth/domain/auth_state.dart';
@@ -25,7 +26,11 @@ class _BrdAppState extends ConsumerState<BrdApp> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(authProvider.notifier).checkAuth());
+    Future.microtask(() async {
+      await ref.read(authProvider.notifier).checkAuth();
+      // 로컬 저장소 sync — 등록된 도메인 순회. Phase 3에서 도메인들이 register 됨.
+      await ref.read(syncEngineProvider).startAutoSync();
+    });
   }
 
   @override
