@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/sync/sync_types.dart';
 import '../data/local/bike_local_repository.dart';
 import '../data/repository/bike_repository.dart';
+import 'bike_provider.dart';
 
 /// 바이크 도메인 sync 서비스.
 ///
@@ -12,11 +13,13 @@ import '../data/repository/bike_repository.dart';
 /// 2. 각 레코드를 서버 upsert 엔드포인트로 전송 (POST /bikes/sync)
 /// 3. deleted_at != null이면 soft delete → 성공 시 로컬 hard delete
 /// 4. 실패는 markFailed로 저장, 다음 사이클에 재시도
+/// 5. 결과 반영 후 bikeListProvider/bikeDetailProvider invalidate → UI가 최신 sync_state 표시
 class BikeSyncService implements Syncable {
   final BikeLocalRepository _local;
   final BikeRepository _remote;
+  final Ref _ref;
 
-  BikeSyncService(this._local, this._remote);
+  BikeSyncService(this._local, this._remote, this._ref);
 
   @override
   String get name => 'bike';
@@ -24,6 +27,7 @@ class BikeSyncService implements Syncable {
   @override
   Future<void> syncPending() async {
     final pending = await _local.listPendingRaw();
+    if (pending.isEmpty) return;
     for (final row in pending) {
       final id = row['id'] as String;
       final deletedAt = row['deleted_at'] as int?;
@@ -41,6 +45,9 @@ class BikeSyncService implements Syncable {
         await _local.markFailed(id, e.toString());
       }
     }
+    // UI가 최신 sync_state로 목록/상세를 다시 그리도록 invalidate.
+    _ref.invalidate(bikeListProvider);
+    _ref.invalidate(bikeDetailProvider);
   }
 
   /// 로그인 직후 최초 1회 호출 — 서버 데이터를 로컬로 pull.
@@ -100,5 +107,6 @@ final bikeSyncServiceProvider = Provider<BikeSyncService>((ref) {
   return BikeSyncService(
     ref.watch(bikeLocalRepositoryProvider),
     ref.watch(bikeRepositoryProvider),
+    ref,
   );
 });
