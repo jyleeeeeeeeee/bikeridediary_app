@@ -7,6 +7,7 @@ import 'core/sync/sync_engine.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/domain/auth_provider.dart';
 import 'features/auth/domain/auth_state.dart';
+import 'features/bike/domain/bike_sync_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,13 +29,31 @@ class _BrdAppState extends ConsumerState<BrdApp> {
     super.initState();
     Future.microtask(() async {
       await ref.read(authProvider.notifier).checkAuth();
-      // 로컬 저장소 sync — 등록된 도메인 순회. Phase 3에서 도메인들이 register 됨.
-      await ref.read(syncEngineProvider).startAutoSync();
+      // 도메인 sync 서비스 등록 — 각 도메인이 로컬 우선 이전 완료 시점에 여기에 추가.
+      final engine = ref.read(syncEngineProvider);
+      engine.register(ref.read(bikeSyncServiceProvider));
+      // 초기 pull: 로그인 유저이고 로컬이 비어 있으면 서버에서 pull.
+      final auth = ref.read(authProvider);
+      if (auth.status == AuthStatus.authenticated && !auth.isLocalGuest) {
+        await ref.read(bikeSyncServiceProvider).pullFromServerIfEmpty();
+      }
+      await engine.startAutoSync();
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    // 로그인 상태 전이 감지 — 앱 실행 중 로그인이 발생하면 서버에서 로컬로 pull.
+    ref.listen<AuthState>(authProvider, (prev, next) async {
+      final justLoggedIn = (prev == null ||
+              prev.status != AuthStatus.authenticated) &&
+          next.status == AuthStatus.authenticated;
+      if (justLoggedIn && !next.isLocalGuest) {
+        await ref.read(bikeSyncServiceProvider).pullFromServerIfEmpty();
+        await ref.read(syncEngineProvider).syncAll();
+      }
+    });
+
     final authState = ref.watch(authProvider);
     final router = ref.watch(appRouterProvider);
 

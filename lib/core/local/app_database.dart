@@ -12,7 +12,7 @@ import 'package:sqflite/sqflite.dart';
 class AppDatabase {
   static Database? _db;
   static const _dbName = 'brd_local.db';
-  static const _currentVersion = 1;
+  static const _currentVersion = 2;
 
   static Future<Database> instance() async {
     if (_db != null) return _db!;
@@ -46,10 +46,49 @@ class AppDatabase {
   }
 
   /// 버전별 마이그레이션. 각 도메인이 자기 Phase에서 여기에 스텝을 추가한다.
-  /// v1은 인프라만 있고 도메인 테이블은 아직 없음 — Phase 3 시작 시 도메인별로 v2, v3, v4 추가.
   static final Map<int, Future<void> Function(Database)> _migrations = {
     1: (db) async {
-      // 인프라 자체엔 테이블 없음. 도메인 Phase에서 v2 이상으로 추가.
+      // 인프라 자체엔 테이블 없음.
+    },
+    2: (db) async {
+      // 바이크 도메인 로컬 저장소.
+      // id: 클라이언트 UUID v4. 서버는 이 UUID를 그대로 PK로 수용.
+      // sync 컬럼: sync_state/updated_at/synced_at/sync_error/deleted_at (공통).
+      await db.execute('''
+        CREATE TABLE bikes (
+          id TEXT PRIMARY KEY,
+          manufacturer_name TEXT NOT NULL,
+          model_name TEXT NOT NULL,
+          year INTEGER NOT NULL,
+          category TEXT NOT NULL,
+          total_mileage_km INTEGER NOT NULL DEFAULT 0,
+          is_representative INTEGER NOT NULL DEFAULT 0,
+          purchased_at TEXT,
+          photo_url TEXT,
+          memo TEXT,
+          created_at INTEGER NOT NULL,
+          sync_state TEXT NOT NULL DEFAULT 'PENDING',
+          updated_at INTEGER NOT NULL,
+          synced_at INTEGER,
+          sync_error TEXT,
+          deleted_at INTEGER
+        )
+      ''');
+      await db.execute(
+        'CREATE INDEX idx_bikes_sync_state ON bikes(sync_state)',
+      );
+      await db.execute(
+        'CREATE INDEX idx_bikes_deleted ON bikes(deleted_at)',
+      );
     },
   };
+
+  /// 로그아웃 시 로컬 데이터 전체 삭제 (한 기기 = 한 유저 전제).
+  /// 도메인이 추가될 때마다 여기에 DELETE 문 추가.
+  static Future<void> clearAll() async {
+    final db = await instance();
+    await db.transaction((txn) async {
+      await txn.delete('bikes');
+    });
+  }
 }

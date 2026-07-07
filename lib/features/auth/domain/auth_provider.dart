@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao;
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import '../../../core/local/app_database.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/storage/token_storage.dart';
 import '../../bike/domain/bike_provider.dart';
@@ -79,12 +80,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
     } catch (_) {}
     await TokenStorage.clear();
+    // 한 기기 = 한 유저 전제. 로그아웃 시 로컬 도메인 데이터 전체 삭제
+    // → 재로그인 또는 다른 유저 로그인 시 서버에서 새로 pull.
+    await AppDatabase.clearAll();
     _invalidateAllData();
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
   void forceLogout() {
     TokenStorage.clear();
+    // fire-and-forget — 강제 로그아웃 흐름은 UI가 이미 진행 중일 수 있어 await 없음.
+    AppDatabase.clearAll();
     _invalidateAllData();
     state = const AuthState(status: AuthStatus.unauthenticated);
   }

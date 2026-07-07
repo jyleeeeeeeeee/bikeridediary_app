@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/sync/sync_types.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/empty_bike_view.dart';
 import '../data/model/bike_category.dart';
@@ -95,6 +97,7 @@ class BikeListScreen extends ConsumerWidget {
                           mileage: bike.totalMileageKm,
                           year: bike.year,
                           isRepresentative: bike.isRepresentative,
+                          syncState: bike.syncState,
                           onTap: () => context.push('/bikes/${bike.id}'),
                         );
                       },
@@ -123,6 +126,7 @@ class _BikeCard extends StatelessWidget {
   final int mileage;
   final int year;
   final bool isRepresentative;
+  final SyncState? syncState;
   final VoidCallback onTap;
 
   const _BikeCard({
@@ -133,6 +137,7 @@ class _BikeCard extends StatelessWidget {
     required this.year,
     required this.isRepresentative,
     required this.onTap,
+    this.syncState,
   });
 
   @override
@@ -200,23 +205,46 @@ class _BikeCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  if (isRepresentative)
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 4),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        gradient: AppTheme.accentGradient,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Text(
-                        'Main',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 8,
-                          fontWeight: FontWeight.w700,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (syncState == SyncState.pending)
+                        const Padding(
+                          padding: EdgeInsets.only(right: 4),
+                          child: Icon(
+                            CupertinoIcons.cloud_upload,
+                            size: 14,
+                            color: Color(0xFF8E8E93),
+                          ),
                         ),
-                      ),
-                    ),
+                      if (syncState == SyncState.failed)
+                        const Padding(
+                          padding: EdgeInsets.only(right: 4),
+                          child: Icon(
+                            CupertinoIcons.exclamationmark_triangle_fill,
+                            size: 14,
+                            color: Color(0xFFFF9500),
+                          ),
+                        ),
+                      if (isRepresentative)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            gradient: AppTheme.accentGradient,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Text(
+                            'Main',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.baseline,
