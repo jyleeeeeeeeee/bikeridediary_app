@@ -60,6 +60,9 @@ class BikeSyncService implements Syncable {
       for (final bike in serverBikes) {
         await _local.upsert(bike, state: SyncState.synced);
       }
+      // pull된 데이터를 UI가 즉시 반영하도록 invalidate.
+      // 이게 없으면 홈 화면이 pull보다 먼저 로컬을 조회해 빈 목록으로 굳음.
+      _ref.invalidate(bikeListProvider);
     } catch (_) {
       // 오프라인이거나 서버 오류. 다음 sync 사이클에 재시도.
     }
