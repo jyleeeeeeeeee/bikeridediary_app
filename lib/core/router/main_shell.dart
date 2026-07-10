@@ -73,10 +73,13 @@ class _MainShellState extends ConsumerState<MainShell>
 
   void _onExplore() {
     _collapse();
-    // 라이딩/코스 도메인 복구 시 라우트 연결 (예: context.push('/courses'))
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('탐색 기능 준비 중')),
-    );
+    context.push('/courses');
+  }
+
+  void _onBikes() {
+    _collapse();
+    // Branch 2 = 내 바이크. 브랜치 전환 + 루트(/bikes)로 리셋.
+    widget.navigationShell.goBranch(2, initialLocation: true);
   }
 
   void _onRecord() {
@@ -131,6 +134,7 @@ class _MainShellState extends ConsumerState<MainShell>
               child: _ExpandedMenu(
                 animation: _fabAnimation,
                 onExplore: _onExplore,
+                onBikes: _onBikes,
                 onRecord: _onRecord,
               ),
             ),
@@ -181,7 +185,6 @@ class _MainShellState extends ConsumerState<MainShell>
             _NavItem(icon: Icons.build_rounded, label: '정비', index: 1, currentIndex: currentIndex, isExpanded: false, onTap: _onTap),
             // 바이크 슬롯: 큰 원형 버튼은 body의 Positioned 오버레이로 따로 그림.
             // 여기는 다른 항목들과의 간격 유지용 빈 공간만 차지.
-                const Expanded(child: SizedBox.shrink()),
                 const Expanded(child: SizedBox.shrink()),
             _NavItem(icon: Icons.local_gas_station_rounded, label: '주유', index: 3, currentIndex: currentIndex, isExpanded: false, onTap: _onTap),
             _NavItem(icon: Icons.settings_rounded, label: '설정', index: 4, currentIndex: currentIndex, isExpanded: false, onTap: _onTap),
@@ -237,29 +240,35 @@ class _BikeCenterButton extends StatelessWidget {
 class _ExpandedMenu extends StatelessWidget {
   final Animation<double> animation;
   final VoidCallback onExplore;
+  final VoidCallback onBikes;
   final VoidCallback onRecord;
 
   const _ExpandedMenu({
     required this.animation,
     required this.onExplore,
+    required this.onBikes,
     required this.onRecord,
   });
 
   @override
   Widget build(BuildContext context) {
-    // 바이크 아이콘 기준으로 좌상단/우상단으로 펼쳐지는 거리
-    const double spread = 50;
+    // 3버튼 부채꼴 배치 (중앙 원 기준):
+    //   좌 = 코스탐색, 상단 = 내 바이크, 우 = 뱅킹각 측정.
+    // 좌·우는 사선 위, 중앙은 좀 더 위로.
+    const double sideSpread = 70;
+    const double sideRise = 40;
+    const double centerRise = 78;
 
     return SizedBox(
-      width: 220,
-      height: 100,
+      width: 260,
+      height: 120,
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.bottomCenter,
         children: [
           _SubFab(
             animation: animation,
-            offset: const Offset(-spread, -spread),
+            offset: const Offset(-sideSpread, -sideRise),
             icon: Icons.map_outlined,
             label: '코스 탐색',
             iconColor: Colors.green,
@@ -267,7 +276,15 @@ class _ExpandedMenu extends StatelessWidget {
           ),
           _SubFab(
             animation: animation,
-            offset: const Offset(spread, -spread),
+            offset: const Offset(0, -centerRise),
+            icon: Icons.two_wheeler,
+            label: '내 바이크',
+            iconColor: const Color(0xFF007AFF),
+            onTap: onBikes,
+          ),
+          _SubFab(
+            animation: animation,
+            offset: const Offset(sideSpread, -sideRise),
             icon: Icons.speed,
             label: '뱅킹각 측정',
             iconColor: const Color(0xFFFF3B30),
@@ -304,7 +321,7 @@ class _SubFab extends StatelessWidget {
         final t = animation.value.clamp(0.0, 1.0).toDouble();
         return Positioned(
           bottom: -offset.dy * t, // dy 음수라 위로 이동
-          left: 110 + offset.dx * t - 28, // 컨테이너 가로 220 기준 중앙 정렬
+          left: 130 + offset.dx * t - 28, // 컨테이너 가로 260 기준 중앙 정렬
           child: IgnorePointer(
             ignoring: t < 0.5,
             child: Opacity(opacity: t, child: child),

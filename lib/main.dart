@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'core/router/app_router.dart';
@@ -13,6 +14,14 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
   KakaoSdk.init(nativeAppKey: dotenv.env['KAKAO_NATIVE_APP_KEY']!);
+  // 네이버 지도 SDK 초기화 — .env에 NAVER_MAP_CLIENT_ID 필요.
+  // 네이버 클라우드 플랫폼 콘솔에서 발급받은 Client ID를 넣으면 지도 타일이 로드됨.
+  await FlutterNaverMap().init(
+    clientId: dotenv.env['NAVER_MAP_CLIENT_ID'] ?? '',
+    onAuthFailed: (ex) {
+      debugPrint('네이버 지도 인증 실패: $ex');
+    },
+  );
   runApp(const ProviderScope(child: BrdApp()));
 }
 

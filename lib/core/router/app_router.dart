@@ -25,6 +25,7 @@ import '../../features/fueling/data/model/fueling_response.dart';
 import '../../features/banking/presentation/banking_screen.dart';
 import '../../features/banking/presentation/session_list_screen.dart' as banking;
 import '../../features/banking/presentation/session_detail_screen.dart' as banking;
+import '../../features/course/presentation/course_map_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 
 Page<void> _smoothPage(GoRouterState state, Widget child) {
@@ -95,6 +96,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // Auth routes — outside the shell (no bottom nav)
       GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
       GoRoute(path: '/signup', builder: (_, _) => const SignupScreen()),
+
+      // 코스 탐색 (네이버 지도) — shell 밖 전체 화면 라우트
+      GoRoute(
+        path: '/courses',
+        pageBuilder: (_, state) => _smoothPage(state, const CourseMapScreen()),
+      ),
 
       // Banking (뱅킹각 측정) — shell 밖 전체 화면 라우트
       GoRoute(
