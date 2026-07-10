@@ -33,9 +33,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
 
     final isOnline = ref.watch(connectivityProvider);
+    final isLoading = ref.watch(
+      authProvider.select((s) => s.status == AuthStatus.loading),
+    );
 
     return Scaffold(
-      body: Container(
+      body: Stack(
+        children: [
+          Container(
         // MYCLE 스타일 밝은 그래디언트 배경 (연한 블루 → 화이트)
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -287,6 +292,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
       ),
+          if (isLoading) const _LoadingOverlay(),
+        ],
+      ),
     );
   }
 
@@ -477,6 +485,34 @@ class _EmailLoginSheetState extends ConsumerState<_EmailLoginSheet> {
             _passwordController.text,
           );
     }
+  }
+}
+
+/// 로그인/게스트 요청 중 상호작용 차단 + 스피너 표시.
+/// authProvider.status == loading 동안만 렌더됨.
+class _LoadingOverlay extends StatelessWidget {
+  const _LoadingOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: AbsorbPointer(
+        absorbing: true,
+        child: ColoredBox(
+          color: Colors.black.withValues(alpha: 0.25),
+          child: const Center(
+            child: SizedBox(
+              width: 48,
+              height: 48,
+              child: CircularProgressIndicator(
+                strokeWidth: 3.5,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
