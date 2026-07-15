@@ -1,18 +1,17 @@
-import 'package:flutter/material.dart';
-
-/// 지도 카테고리. 서버 enum과 매핑 + UI 표시 정보.
+/// 지도 카테고리. 서버 place_categories.category_code와 매핑 + UI 표시 정보.
+/// enum 선언 순서 = display_order 오름차순 (명소 1, 카페 2, 식당 3, 센터 9999, 기타).
 enum PlaceCategory {
-  landmark('LANDMARK', '명소', Icons.landscape_outlined, Color(0xFF34C759)),
-  cafe('CAFE', '바이크 카페', Icons.local_cafe_outlined, Color(0xFFAF52DE)),
-  serviceCenter('SERVICE_CENTER', '정비 센터', Icons.build_outlined, Color(0xFFFF3B30)),
-  gasStation('GAS_STATION', '주유소', Icons.local_gas_station_outlined, Color(0xFFFF9500));
+  famous('FAMOUS', '명소', '📸'),
+  cafe('CAFE', '카페', '☕'),
+  restaurant('RESTAURANT', '식당', '🍽️'),
+  service('SERVICE', '센터', '🔧'),
+  other('OTHER', '기타', '📌');
 
   final String serverCode;
   final String label;
-  final IconData icon;
-  final Color color;
+  final String icon;
 
-  const PlaceCategory(this.serverCode, this.label, this.icon, this.color);
+  const PlaceCategory(this.serverCode, this.label, this.icon);
 
   static PlaceCategory? fromServer(String code) {
     for (final c in PlaceCategory.values) {

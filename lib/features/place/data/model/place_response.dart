@@ -29,16 +29,32 @@ class PlaceResponse {
     this.naverPlaceId,
   });
 
+  PlaceResponse copyWith({double? latitude, double? longitude}) {
+    return PlaceResponse(
+      id: id,
+      name: name,
+      category: category,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      address: address,
+      description: description,
+      photoUrl: photoUrl,
+      phone: phone,
+      kakaoPlaceId: kakaoPlaceId,
+      naverPlaceId: naverPlaceId,
+    );
+  }
+
   factory PlaceResponse.fromJson(Map<String, dynamic> json) {
     return PlaceResponse(
       id: json['id'] as String,
-      name: json['name'] as String,
+      name: json['placeName'] as String,
       category:
           PlaceCategory.fromServer(json['category'] as String) ??
-              PlaceCategory.landmark,
+              PlaceCategory.famous,
       latitude: (json['latitude'] as num).toDouble(),
       longitude: (json['longitude'] as num).toDouble(),
-      address: json['address'] as String?,
+      address: json['address'] as String? ?? json['roadAddress'] as String?,
       description: json['description'] as String?,
       photoUrl: json['photoUrl'] as String?,
       phone: json['phone'] as String?,

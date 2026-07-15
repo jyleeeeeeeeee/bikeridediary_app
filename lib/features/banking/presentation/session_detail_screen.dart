@@ -83,7 +83,8 @@ class _DetailBody extends ConsumerWidget {
     final secs = (session.durationMs % 60000) ~/ 1000;
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.fromLTRB(
+          16, 16, 16, 16 + MediaQuery.of(context).viewPadding.bottom),
       children: [
         Card(
           color: BankingColors.bgCard,

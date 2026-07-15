@@ -55,7 +55,8 @@ class SessionListScreen extends ConsumerWidget {
           return RefreshIndicator(
             onRefresh: () async => ref.invalidate(sessionListProvider),
             child: ListView.separated(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.fromLTRB(
+                  16, 16, 16, 16 + MediaQuery.of(context).viewPadding.bottom),
               physics: const AlwaysScrollableScrollPhysics(),
               itemCount: sessions.length,
               separatorBuilder: (_, _) => const SizedBox(height: 12),
