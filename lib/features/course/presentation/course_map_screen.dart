@@ -52,8 +52,10 @@ class _CourseMapScreenState extends ConsumerState<CourseMapScreen> {
   }
 
   /// 서버에서 받은 전체 places로 마커를 재구성.
-  /// 새로 추가된 place 있으면 addOverlay, 사라진 건 removeOverlay.
-  /// (지도 진입 초기 1회 + 장소 생성/좌표수정 후 invalidate 시 실행)
+  /// - 신규 place: addOverlay
+  /// - 사라진 place: removeOverlay
+  /// - 좌표/이름/카테고리 중 하나라도 변경된 place: 기존 마커 삭제 후 재생성
+  ///   (SDK의 setPosition/setCaption만으로는 caption·onTap 콜백까지 갱신하기 어려움)
   Future<void> _syncMarkers(List<PlaceResponse> places) async {
     final controller = _mapController;
     if (controller == null) return;
@@ -69,15 +71,28 @@ class _CourseMapScreenState extends ConsumerState<CourseMapScreen> {
       if (m != null) await controller.deleteOverlay(m.info);
     }
 
-    // 새/기존 마커 추가 + 좌표 갱신
+    // 신규 / 변경된 마커 재생성, 변경 없으면 place 참조만 최신화
     for (final p in places) {
       final existing = _markers[p.id];
-      if (existing != null) {
-        // 좌표 변경 반영
-        existing.setPosition(NLatLng(p.latitude, p.longitude));
+      final cached = _markerPlaces[p.id];
+      final changed = cached == null ||
+          cached.latitude != p.latitude ||
+          cached.longitude != p.longitude ||
+          cached.name != p.name ||
+          cached.category != p.category;
+
+      if (existing != null && !changed) {
+        // 시각 요소는 그대로, 시트에서 참조할 최신 데이터만 갱신 (address 등)
         _markerPlaces[p.id] = p;
         continue;
       }
+
+      // 변경된 경우 기존 마커 삭제 후 재생성 (caption/onTap 콜백까지 새 값으로)
+      if (existing != null) {
+        await controller.deleteOverlay(existing.info);
+        _markers.remove(p.id);
+      }
+
       final marker = NMarker(
         id: p.id,
         position: NLatLng(p.latitude, p.longitude),
@@ -246,9 +261,9 @@ class _CategoryFilterBarState extends ConsumerState<_CategoryFilterBar> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _CategoryChip(
+            _CategoryChip2(
               label: _expanded ? '접기' : '펼치기',
-              icon: _expanded ? '📁' : '📂',
+              icon: _expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
               isSelected: false,
               onTap: () => setState(() => _expanded = !_expanded),
             ),
@@ -368,6 +383,63 @@ class _CategoryChip extends StatelessWidget {
               onTap: onTap,
               child: Center(
                 child: Text(icon, style: const TextStyle(fontSize: 16)),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: isSelected ? _accentColor : const Color(0xFF1C1C1E),
+            shadows: const [
+              Shadow(color: Colors.white, blurRadius: 3),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+
+class _CategoryChip2 extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _CategoryChip2({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          width: 34,
+          height: 34,
+          child: Material(
+            color: Colors.white,
+            elevation: 3,
+            shadowColor: Colors.black26,
+            shape: CircleBorder(
+              side: isSelected
+                  ? const BorderSide(color: _accentColor, width: 2)
+                  : BorderSide.none,
+            ),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: onTap,
+              child: Center(
+                child: Icon(icon, size: 32,)
               ),
             ),
           ),

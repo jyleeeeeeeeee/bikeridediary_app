@@ -26,6 +26,8 @@ import '../../features/banking/presentation/banking_screen.dart';
 import '../../features/banking/presentation/session_list_screen.dart' as banking;
 import '../../features/banking/presentation/session_detail_screen.dart' as banking;
 import '../../features/course/presentation/course_map_screen.dart';
+import '../../features/riding_course/presentation/riding_course_home_screen.dart';
+import '../../features/riding_course/presentation/course_detail_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 
 Page<void> _smoothPage(GoRouterState state, Widget child) {
@@ -101,6 +103,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/courses',
         pageBuilder: (_, state) => _smoothPage(state, const CourseMapScreen()),
+      ),
+
+      // 라이딩 코스 홈 + 상세 — shell 밖 전체 화면 라우트
+      GoRoute(
+        path: '/riding-courses',
+        pageBuilder: (_, state) =>
+            _smoothPage(state, const RidingCourseHomeScreen()),
+        routes: [
+          GoRoute(
+            path: ':courseId',
+            pageBuilder: (_, state) => _smoothPage(
+              state,
+              CourseDetailScreen(
+                courseId: state.pathParameters['courseId']!,
+              ),
+            ),
+          ),
+        ],
       ),
 
       // Banking (뱅킹각 측정) — shell 밖 전체 화면 라우트

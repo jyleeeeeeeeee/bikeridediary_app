@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -87,6 +89,11 @@ class _MainShellState extends ConsumerState<MainShell>
     context.push('/banking');
   }
 
+  void _onRidingCourses() {
+    _collapse();
+    context.push('/riding-courses');
+  }
+
   @override
   Widget build(BuildContext context) {
     final isLoading = ref.watch(isLoadingProvider);
@@ -136,6 +143,7 @@ class _MainShellState extends ConsumerState<MainShell>
                 onExplore: _onExplore,
                 onBikes: _onBikes,
                 onRecord: _onRecord,
+                onRidingCourses: _onRidingCourses,
               ),
             ),
           ),
@@ -242,57 +250,79 @@ class _ExpandedMenu extends StatelessWidget {
   final VoidCallback onExplore;
   final VoidCallback onBikes;
   final VoidCallback onRecord;
+  final VoidCallback onRidingCourses;
 
   const _ExpandedMenu({
     required this.animation,
     required this.onExplore,
     required this.onBikes,
     required this.onRecord,
+    required this.onRidingCourses,
   });
 
   @override
   Widget build(BuildContext context) {
-    // 3버튼 부채꼴 배치 (중앙 원 기준):
-    //   좌 = 코스탐색, 상단 = 내 바이크, 우 = 뱅킹각 측정.
-    // 좌·우는 사선 위, 중앙은 좀 더 위로.
-    const double sideSpread = 70;
-    const double sideRise = 40;
-    const double centerRise = 78;
+    // 4버튼 부채꼴 배치 (반원 arc, radius 120)
+    // Stack의 bottomCenter를 origin으로 하고, Transform.translate로 각도별 오프셋만.
+    // 각도: -55° / -20° / +20° / +55° (수직 위=0°)
+    const double radius = 120.0;
+    final leftOuter = _polar(radius, -55);
+    final leftInner = _polar(radius, -20);
+    final rightInner = _polar(radius, 20);
+    final rightOuter = _polar(radius, 55);
 
     return SizedBox(
-      width: 260,
-      height: 120,
+      width: 320,
+      height: 170,
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.bottomCenter,
         children: [
+          // 찾아보기 (좌외)
           _SubFab(
             animation: animation,
-            offset: const Offset(-sideSpread, -sideRise),
+            offset: leftOuter,
             icon: Icons.map_outlined,
-            label: '코스 탐색',
+            label: '찾아보기',
             iconColor: Colors.green,
             onTap: onExplore,
           ),
+          // 내 바이크 (좌내)
           _SubFab(
             animation: animation,
-            offset: const Offset(0, -centerRise),
+            offset: leftInner,
             icon: Icons.two_wheeler,
             label: '내 바이크',
             iconColor: const Color(0xFF007AFF),
             onTap: onBikes,
           ),
+          // 뱅킹각 측정 (우내)
           _SubFab(
             animation: animation,
-            offset: const Offset(sideSpread, -sideRise),
+            offset: rightInner,
             icon: Icons.speed,
             label: '뱅킹각 측정',
             iconColor: const Color(0xFFFF3B30),
             onTap: onRecord,
           ),
+          // 라이딩 코스 (우외)
+          _SubFab(
+            animation: animation,
+            offset: rightOuter,
+            icon: Icons.route,
+            label: '라이딩 코스',
+            iconColor: const Color(0xFF34C759),
+            onTap: onRidingCourses,
+          ),
         ],
       ),
     );
+  }
+
+  // 극좌표 → 화면 좌표 (수직 위쪽 = angleDeg 0, 오른쪽으로 회전 = +)
+  static Offset _polar(double r, double angleDeg) {
+    final rad = angleDeg * math.pi / 180;
+    return Offset(r * math.sin(rad), -r * math.cos(rad));
   }
 }
 
@@ -319,9 +349,10 @@ class _SubFab extends StatelessWidget {
       animation: animation,
       builder: (context, child) {
         final t = animation.value.clamp(0.0, 1.0).toDouble();
-        return Positioned(
-          bottom: -offset.dy * t, // dy 음수라 위로 이동
-          left: 130 + offset.dx * t - 28, // 컨테이너 가로 260 기준 중앙 정렬
+        // Stack alignment=bottomCenter라 자식은 자동으로 하단 중앙 배치.
+        // Transform.translate로 각 버튼의 부채꼴 오프셋만 적용.
+        return Transform.translate(
+          offset: Offset(offset.dx * t, offset.dy * t),
           child: IgnorePointer(
             ignoring: t < 0.5,
             child: Opacity(opacity: t, child: child),
