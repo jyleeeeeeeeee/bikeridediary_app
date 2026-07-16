@@ -266,14 +266,14 @@ class _ExpandedMenu extends StatelessWidget {
     // Stack의 bottomCenter를 origin으로 하고, Transform.translate로 각도별 오프셋만.
     // 각도: -55° / -20° / +20° / +55° (수직 위=0°)
     const double radius = 120.0;
-    final leftOuter = _polar(radius, -55);
+    final leftOuter = _polar(radius, -80);
     final leftInner = _polar(radius, -20);
     final rightInner = _polar(radius, 20);
-    final rightOuter = _polar(radius, 55);
+    final rightOuter = _polar(radius, 80);
 
     return SizedBox(
       width: 320,
-      height: 170,
+      height: 150,
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.bottomCenter,
